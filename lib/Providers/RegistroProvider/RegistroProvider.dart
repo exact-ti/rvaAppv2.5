@@ -28,9 +28,8 @@ class RegistroProvider implements IRegistroProvider {
   Future<List<AgenciaModel>> listarAgencia(String codigo) async {
     Map<String,dynamic> buzon = json.decode(_prefs.buzon);
     BuzonModel bznmodel = buzonModelclass.fromPreferencs(buzon);
-
-    final url ="/UsuarioWS.asmx/ValidarUsuario?sUsuario=$codigo";
-
+    String idbuzon = bznmodel.idUsuario;
+    final url ="/AgenciaWS.asmx/FiltrarAgenciaPorCodigoProveedor?codigoUsuario=$idbuzon&codigoAgencia=$codigo";
     final resp = await http.get(properties['API'] + url);
     
     if (resp.body.isEmpty) {
@@ -41,4 +40,26 @@ class RegistroProvider implements IRegistroProvider {
       return agencias;
     }
   }
+
+  @override
+  Future<List<AgenciaModel>> listarAgencia2(String codigo) {
+    return Future.delayed(new Duration(seconds: 4),(){
+      return listaporcodigo(codigo);
+    });
+  }
+
+  List<AgenciaModel> listaporcodigo(String codigo){
+      List<AgenciaModel> agencias = new List();
+      if(codigo == "LAS PA"){
+          AgenciaModel agenciaModel = new AgenciaModel();
+          //agenciaModel.id=1;
+          agenciaModel.nombre="LAS PALMERAS";
+          agencias.add(agenciaModel);
+          return agencias;
+      }else{
+        return null;
+      }
+  }
+
+
 }

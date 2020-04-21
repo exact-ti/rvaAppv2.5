@@ -24,8 +24,8 @@ class RegistroController {
 
 
     Future<List<AgenciaModel>>  listarAgencias(String codigo) async {
-       List<AgenciaModel> usuarios =  await intersedeInterface.listarAgencias(codigo);
-        return usuarios;
+       List<AgenciaModel> agencias =  await intersedeInterface.listarAgencias(codigo);
+        return agencias;
     }
 
 }

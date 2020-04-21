@@ -28,7 +28,7 @@ class RegistroCore implements IRegistroCore {
 
   @override
   Future<List<AgenciaModel>> listarAgencias(String codigo) async {
-     List<AgenciaModel> agencias = await registro.listarAgencia(codigo);
+     List<AgenciaModel> agencias = await registro.listarAgencia2(codigo);
         return agencias;
   }
 }

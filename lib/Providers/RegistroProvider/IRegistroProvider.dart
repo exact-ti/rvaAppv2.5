@@ -7,6 +7,7 @@ abstract class IRegistroProvider {
 
   Future<List<AgenciaModel>> listarAgencia(String codigo);
 
-  
+    Future<List<AgenciaModel>> listarAgencia2(String codigo);
+
   
 }
