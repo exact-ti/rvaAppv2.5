@@ -4,7 +4,11 @@ import 'package:rvaapp/vistas/Login/loginPage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 var colorletra = const Color(0xFFACADAD);
+var colorletra2 = const Color(0xFF466C7A);
 const PrimaryColor = const Color(0xFF2C6983);
+const colorback = const Color(0xFFD2E3EA);
+const colorred = const Color(0xFFFF7375);
+
 
 void mostrarAlerta(BuildContext context, String mensaje, String titulo) {
   showDialog(
@@ -154,4 +158,16 @@ BoxDecoration myBoxDecoration(Color colorletra) {
   return BoxDecoration(
     border: Border.all(color: colorletra),
   );
+}
+
+ AppBar appbarUtil(String text){
+  return  AppBar(
+          backgroundColor: PrimaryColor,
+          title: Text('$text',
+              style: TextStyle(
+                  fontSize: 18,
+                  decorationStyle: TextDecorationStyle.wavy,
+                  fontStyle: FontStyle.normal,
+                  fontWeight: FontWeight.normal)),
+        );
 }

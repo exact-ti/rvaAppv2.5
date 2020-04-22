@@ -43,21 +43,28 @@ class RegistroProvider implements IRegistroProvider {
 
   @override
   Future<List<AgenciaModel>> listarAgencia2(String codigo) {
-    return Future.delayed(new Duration(seconds: 4),(){
+    return Future.delayed(new Duration(seconds: 1),(){
       return listaporcodigo(codigo);
     });
   }
 
   List<AgenciaModel> listaporcodigo(String codigo){
       List<AgenciaModel> agencias = new List();
-      if(codigo == "LAS PA"){
+      if(codigo == "LAS"){
           AgenciaModel agenciaModel = new AgenciaModel();
           //agenciaModel.id=1;
           agenciaModel.nombre="LAS PALMERAS";
+          agenciaModel.estado=1;
           agencias.add(agenciaModel);
           return agencias;
-      }else{
-        return null;
+      }
+      if(codigo == "LOS"){
+          AgenciaModel agenciaModel = new AgenciaModel();
+          //agenciaModel.id=1;
+          agenciaModel.nombre="LOS PALMOS";
+          agenciaModel.estado=2;
+          agencias.add(agenciaModel);
+          return agencias;
       }
   }
 
