@@ -69,7 +69,6 @@ class _HomePageState extends State<HomePage> {
 
     final textBandeja = Container(
       child: Text("código"),
-      margin: const EdgeInsets.only(left: 15),
     );
 
 

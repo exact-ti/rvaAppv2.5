@@ -105,7 +105,7 @@ List<Widget> milistview(BuildContext context) {
 
 Widget cerrarsesion(BuildContext context){
      return ListTile(
-        leading: Icon(Icons.pages, color: Colors.blue),
+        leading: Icon(Icons.exit_to_app, color: Colors.blue),
         title: Text("Cerrar Sesión"),
         onTap: () {
           eliminarpreferences(context);

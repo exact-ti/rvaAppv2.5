@@ -120,7 +120,7 @@ class _LoginPageState extends State<LoginPage> {
       backgroundColor: Colors.white,
       body: Center(
           child: ListView(
-        shrinkWrap: true,
+        shrinkWrap: true, 
         padding: EdgeInsets.only(left: 24.0, right: 24.0),
         children: <Widget>[
           titulo,
