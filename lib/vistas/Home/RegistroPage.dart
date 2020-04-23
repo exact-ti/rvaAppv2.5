@@ -19,15 +19,22 @@ class _HomePageState extends State<HomePage> {
   String codigobandeja = "";
   RegistroController principalcontroller = new RegistroController();
   SharedPreferences sharedPreferences;
-  List<AgenciaModel> agencias =null;
+  List<AgenciaModel> agencias = null;
   bool validarboton = false;
   String qrbarra, valuess = "";
   int cantidadrespuesta = 0;
   int estadoenvio = 0;
+  bool buttonsend = true;
+  bool buttoncamera = true;
+  FocusNode _focusNode;
   //Widget proba = Container();
   @override
   void initState() {
     super.initState();
+    _focusNode = FocusNode();
+    _focusNode.addListener(() {
+      if (_focusNode.hasFocus) _bandejaController.clear();
+    });
     cargarPreferences();
   }
 
@@ -41,7 +48,12 @@ class _HomePageState extends State<HomePage> {
         principalcontroller.recogerdocumento(context, _bandejaController.text);
         setState(() {
           _bandejaController.text = "";
+          agencias = null;
+          codigobandeja = "";
+          buttonsend = true;
         });
+        FocusScope.of(context).unfocus();
+        new TextEditingController().clear();
       } else {
         mostrarAlerta(context, "Primero registro el código para registrarlo",
             "Codigo vacio");
@@ -57,11 +69,16 @@ class _HomePageState extends State<HomePage> {
               borderRadius: BorderRadius.circular(5),
             ),
             onPressed: () {
-              if (agencias != null && estadoenvio!=2) {
-                verificarenvio(context);
+              if (buttonsend) {
+                if (agencias != null && estadoenvio != 2) {
+                  buttonsend = false;
+                  verificarenvio(context);
+                }
               }
             },
-            color: agencias != null && estadoenvio!=2? Color(0xFF2C6983) : colorletra,
+            color: agencias != null && estadoenvio != 2
+                ? Color(0xFF2C6983)
+                : colorletra,
             padding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
             child: Text('Registrar', style: TextStyle(color: Colors.white)),
           ),
@@ -71,62 +88,71 @@ class _HomePageState extends State<HomePage> {
       child: Text("código"),
     );
 
-
     //codigobandeja
-    
+
     Widget crearItem(AgenciaModel usuario) {
-      if(usuario.estado==1){
-      return Container(
-        height: screenHeightExcludingToolbar(context, dividedBy: 10),
-        decoration: myBoxDecoration(usuario.estado),
-        child:Center(child: Row(
-        children: <Widget>[
-        Container(
-          margin: const EdgeInsets.only(left: 20),
-          child: Center(child:Text("Agencia:",style: TextStyle(
-                  fontSize: 15,
-                  color: colorletra2,
-                  decorationStyle: TextDecorationStyle.wavy,
-                  fontStyle: FontStyle.normal,
-                  ))),
-        ),
-        Container(
-          margin: const EdgeInsets.only(left: 20),
-          child: Center(child:Text(usuario.nombre,style: TextStyle(
-                  fontSize: 15,
-                  color: colorletra2,
-                  decorationStyle: TextDecorationStyle.wavy,
-                  fontWeight: FontWeight.bold))),
-        ),        
-        ],
-      )) ,);
-      }else{
-      return Container(
-        height: screenHeightExcludingToolbar(context, dividedBy: 10),
-        decoration: myBoxDecoration(usuario.estado),
-        child:Center(child: Text("LA AGENCIA YA FUE ENVIADA",style: TextStyle(
-                  fontSize: 15,
-                  color: Color(0xFF800001),
-                  decorationStyle: TextDecorationStyle.wavy,
-                  fontWeight: FontWeight.bold)) ,));
+      if (usuario.estado == 1) {
+        return Container(
+          height: screenHeightExcludingToolbar(context, dividedBy: 10),
+          decoration: myBoxDecoration(usuario.estado),
+          child: Center(
+              child: Row(
+            children: <Widget>[
+              Container(
+                margin: const EdgeInsets.only(left: 20),
+                child: Center(
+                    child: Text("Agencia:",
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: colorletra2,
+                          decorationStyle: TextDecorationStyle.wavy,
+                          fontStyle: FontStyle.normal,
+                        ))),
+              ),
+              Container(
+                margin: const EdgeInsets.only(left: 20),
+                child: Center(
+                    child: Text(usuario.nombre,
+                        style: TextStyle(
+                            fontSize: 15,
+                            color: colorletra2,
+                            decorationStyle: TextDecorationStyle.wavy,
+                            fontWeight: FontWeight.bold))),
+              ),
+            ],
+          )),
+        );
+      } else {
+        return Container(
+            height: screenHeightExcludingToolbar(context, dividedBy: 10),
+            decoration: myBoxDecoration(usuario.estado),
+            child: Center(
+              child: Text("LA AGENCIA YA FUE ENVIADA",
+                  style: TextStyle(
+                      fontSize: 15,
+                      color: Color(0xFF800001),
+                      decorationStyle: TextDecorationStyle.wavy,
+                      fontWeight: FontWeight.bold)),
+            ));
       }
-
     }
-
 
     Widget mostrarmensaje() {
       return Container(
         height: screenHeightExcludingToolbar(context, dividedBy: 10),
-        child:Center(child: Container(
-          child: Center(child:Text("No se han encontrado agencias",style: TextStyle(
-                  fontSize: 15,
-                  color: colorletra2,
-                  decorationStyle: TextDecorationStyle.wavy,
-                  fontStyle: FontStyle.normal,
+        child: Center(
+            child: Container(
+          child: Center(
+              child: Text("No se han encontrado agencias",
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: colorletra2,
+                    decorationStyle: TextDecorationStyle.wavy,
+                    fontStyle: FontStyle.normal,
                   ))),
-        ) ) ,);
+        )),
+      );
     }
-
 
     /*Widget _mostrarAgencia(String codigo) {
       return FutureBuilder(
@@ -146,66 +172,73 @@ class _HomePageState extends State<HomePage> {
     }*/
 
     Widget listarwidget(List<AgenciaModel> usuarios) {
-      if(usuarios!= null){
-      return ListView.builder(
-          itemCount: usuarios.length,
-          itemBuilder: (context, i) => crearItem(usuarios[i]));
-      }else{
-           return mostrarmensaje();
+      if (usuarios != null) {
+        return ListView.builder(
+            itemCount: usuarios.length,
+            itemBuilder: (context, i) => crearItem(usuarios[i]));
+      } else {
+        return mostrarmensaje();
       }
-
     }
 
     void validarLista() async {
-      if(_bandejaController.text.length>=properties['CARACTERES_MINIMOS']){
-      agencias =await principalcontroller.listarAgencias(codigobandeja);
-      if(agencias!=null){
-      for(AgenciaModel agencia in agencias){
-      setState(() {
-        estadoenvio=agencia.estado;
-      });
-      }
-      }else
-      {
-      setState(() {
-        estadoenvio=0;
-        agencias=null;  
-      });
-      }
-      }else{
-      setState(() {
-          cantidadrespuesta = 0;
-          agencias=null;
+      if (_bandejaController.text.length >= properties['CARACTERES_MINIMOS']) {
+        agencias = await principalcontroller.listarAgencias(codigobandeja);
+        if (agencias != null) {
+          for (AgenciaModel agencia in agencias) {
+            setState(() {
+              estadoenvio = agencia.estado;
+              buttoncamera = true;
+            });
+          }
+        } else {
+          setState(() {
+            estadoenvio = 0;
+            agencias = null;
+            buttoncamera = true;
+            codigobandeja = codigobandeja;
           });
+        }
+      } else {
+        setState(() {
+          cantidadrespuesta = 0;
+          agencias = null;
+          buttoncamera = true;
+          codigobandeja = codigobandeja;
+        });
       }
-
     }
 
-        Future _traerdatosescanerBandeja() async {
-      var result =await BarcodeScanner.scan();
-
-      setState(() {
-           _bandejaController.text = result.rawContent;
-           codigobandeja=result.rawContent;
-      });
-validarLista();
+    Future _traerdatosescanerBandeja() async {
+      if (buttoncamera) {
+        buttoncamera = false;
+        FocusScope.of(context).unfocus();
+        new TextEditingController().clear();
+        var result = await BarcodeScanner.scan();
+        _bandejaController.text = result.rawContent;
+        codigobandeja = result.rawContent;
+        validarLista();
+      }
     }
-
 
     var bandeja = TextFormField(
       keyboardType: TextInputType.text,
-      autofocus: false,
       controller: _bandejaController,
       textInputAction: TextInputAction.done,
       onFieldSubmitted: (value) {
         setState(() {
           codigobandeja = value;
         });
-        verificarenvio(context);
+        if (agencias != null && estadoenvio != 2) {
+          verificarenvio(context);
+        }else{
+           mostrarAlerta(context, 'El registro de la agencia ya se ha realizado',
+            'Agencia Enviada');
+        }
       },
       onChanged: (text) {
-          codigobandeja = text;
-          validarLista();
+        codigobandeja = text;
+        validarLista();
       },
       decoration: InputDecoration(
         contentPadding:
@@ -227,7 +260,6 @@ validarLista();
       ),
     );
 
-
     final campodetextoandIconoBandeja = Row(children: <Widget>[
       Expanded(
         child: bandeja,
@@ -245,55 +277,62 @@ validarLista();
     ]);
 
     return Scaffold(
-        appBar:ReusableWidgets.getAppBar('Registro de visita'),
+        appBar: ReusableWidgets.getAppBar('Registro de visita'),
         drawer: crearMenu(context),
-        body: Padding(
-          padding: const EdgeInsets.only(left: 20, right: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Container(
-                    margin: const EdgeInsets.only(top: 20),
-                    alignment: Alignment.bottomLeft,
-                    height:
-                        screenHeightExcludingToolbar(context, dividedBy: 30),
-                    width: double.infinity,
-                    child: textBandeja),
-              ),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Container(
-                    margin: const EdgeInsets.only(bottom: 40),
+        body: new GestureDetector(
+            onTap: () {
+              FocusScope.of(context).unfocus();
+              new TextEditingController().clear();
+            },
+            child: Padding(
+              padding: const EdgeInsets.only(left: 20, right: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  Align(
                     alignment: Alignment.centerLeft,
-                    height:
-                        screenHeightExcludingToolbar(context, dividedBy: 12),
-                    width: double.infinity,
-                    child: campodetextoandIconoBandeja),
-              ),
-              Align(
-                alignment: Alignment.center,
-                child: Container(
+                    child: Container(
+                        margin: const EdgeInsets.only(top: 20),
+                        alignment: Alignment.bottomLeft,
+                        height: screenHeightExcludingToolbar(context,
+                            dividedBy: 30),
+                        width: double.infinity,
+                        child: textBandeja),
+                  ),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Container(
+                        margin: const EdgeInsets.only(bottom: 40),
+                        alignment: Alignment.centerLeft,
+                        height: screenHeightExcludingToolbar(context,
+                            dividedBy: 12),
+                        width: double.infinity,
+                        child: campodetextoandIconoBandeja),
+                  ),
+                  Align(
                     alignment: Alignment.center,
-                    height:screenHeightExcludingToolbar(context, dividedBy: 10),
-                    width: double.infinity,
-                    child:
-                       codigobandeja.length < properties['CARACTERES_MINIMOS']
+                    child: Container(
+                        alignment: Alignment.center,
+                        height: screenHeightExcludingToolbar(context,
+                            dividedBy: 10),
+                        width: double.infinity,
+                        child: codigobandeja.length <
+                                properties['CARACTERES_MINIMOS']
                             ? Container()
                             : listarwidget(agencias)),
-              ),
-              Align(
-                alignment: Alignment.center,
-                child: Container(
+                  ),
+                  Align(
                     alignment: Alignment.center,
-                    height: screenHeightExcludingToolbar(context, dividedBy: 5),
-                    width: double.infinity,
-                    child: sendButton),
-              )
-            ],
-          ),
-        ));
+                    child: Container(
+                        alignment: Alignment.center,
+                        height:
+                            screenHeightExcludingToolbar(context, dividedBy: 5),
+                        width: double.infinity,
+                        child: sendButton),
+                  )
+                ],
+              ),
+            )));
   }
 
   Size screenSize(BuildContext context) {
@@ -306,18 +345,17 @@ validarLista();
   }
 
   BoxDecoration myBoxDecoration(int i) {
-    if(i==1){
-    return BoxDecoration(
-      border: Border.all(color: colorback),
-      color:colorback,
-    );
-    }else{
-    return BoxDecoration(
-      border: Border.all(color: Color(0xFFBF8888)),
-      color:Color(0xFFBF8888),
-    );      
+    if (i == 1) {
+      return BoxDecoration(
+        border: Border.all(color: colorback),
+        color: colorback,
+      );
+    } else {
+      return BoxDecoration(
+        border: Border.all(color: Color(0xFFBF8888)),
+        color: Color(0xFFBF8888),
+      );
     }
-
   }
 
   double screenHeightExcludingToolbar(BuildContext context,
@@ -330,8 +368,6 @@ validarLista();
     sharedPreferences = await SharedPreferences.getInstance();
     print("FSDF");
   }
-
-  
 
   onAfterBuild(BuildContext context) {}
 }

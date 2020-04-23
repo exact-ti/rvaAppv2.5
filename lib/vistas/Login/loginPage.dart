@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:rvaapp/vistas/Home/RegistroPage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:rvaapp/Util/utils.dart';
 
 import 'loginController.dart';
 
@@ -14,7 +15,7 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   
   SharedPreferences sharedPreferences;
-
+  bool pressbutton = true;
   @override
   void initState() {
     super.initState();  
@@ -56,7 +57,7 @@ class _LoginPageState extends State<LoginPage> {
         focusedBorder: InputBorder.none,
         filled: true,
         fillColor: Color(0xffF0F3F4),
-        hintText: 'login',
+        hintText: 'Usuario',
         contentPadding: EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 20.0),
         //border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0)),
       ),
@@ -81,7 +82,16 @@ class _LoginPageState extends State<LoginPage> {
     performLogin(BuildContext context) {
       String username = _usernameController.text;
       String password = _passwordController.text;
+      if(username=="" || password==""){
+                mostrarAlerta(context, 'Es necesario ingresar el usuario y contraseña',
+            'Datos incompletos');
+      }else{
       logincontroller.validarlogin(context, username, password);
+
+      }
+      setState(() {
+        pressbutton = true;
+      });
     }
 
     final loginButton = Padding(
@@ -91,7 +101,12 @@ class _LoginPageState extends State<LoginPage> {
           borderRadius: BorderRadius.circular(10),
         ),
         onPressed: () {
+               FocusScope.of(context).unfocus();
+              new TextEditingController().clear();
+          if(pressbutton){
+          pressbutton = false;
           performLogin(context);
+          } 
           //Navigator.of(context).pushNamed("principal");
         },
         padding: EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 20.0),

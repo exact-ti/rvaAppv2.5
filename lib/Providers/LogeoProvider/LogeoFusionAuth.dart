@@ -7,7 +7,6 @@ import 'package:rvaapp/Configuration/config.dart';
 import 'package:rvaapp/ModelDto/BuzonModel.dart';
 
 class LogeoFusionAuth implements LogeoInterface {
-
   BuzonModel buzonModelclass = new BuzonModel();
 
   @override
@@ -16,12 +15,13 @@ class LogeoFusionAuth implements LogeoInterface {
         "/UsuarioWS.asmx/ValidarUsuario?sUsuario=$username&sPass=$password";
 
     final resp = await http.get(properties['API'] + url);
-    if (resp.body.isEmpty) {
+
+    List<dynamic> decodedData = json.decode(resp.body);
+    if (decodedData.length == 0) {
       return null;
-    } else {
-      List<dynamic> decodedData = json.decode(resp.body);
-      BuzonModel buzonModel = buzonModelclass.fromProvider(decodedData);
-      return buzonModel;
     }
+    BuzonModel buzonModel = buzonModelclass.fromProvider(decodedData);
+
+    return buzonModel;
   }
 }
