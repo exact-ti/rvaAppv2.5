@@ -1,5 +1,6 @@
 import 'package:barcode_scan/barcode_scan.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:rvaapp/ModelDto/AgenciaModel.dart';
 import 'package:rvaapp/Util/widgets.dart';
 import 'package:rvaapp/vistas/Login/loginPage.dart';
@@ -42,7 +43,6 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     WidgetsBinding.instance.addPostFrameCallback((_) => onAfterBuild(context));
-
     void verificarenvio(BuildContext context) {
       if (_bandejaController.text != "") {
         principalcontroller.recogerdocumento(context, _bandejaController.text);
