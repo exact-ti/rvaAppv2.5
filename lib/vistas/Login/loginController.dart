@@ -3,6 +3,7 @@ import 'package:rvaapp/CoreProyecto/Acceso/LoginCore.dart';
 import 'package:rvaapp/CoreProyecto/Acceso/ILoginCore.dart';
 import 'package:rvaapp/Providers/LogeoProvider/LogeoFusionAuth.dart';
 import 'package:rvaapp/Util/utils.dart';
+import 'package:rvaapp/enum/TipoUsuario.dart';
 import 'package:rvaapp/preferencias_usuario/preferencias_usuario.dart';
 
 
@@ -20,7 +21,13 @@ class LoginController {
         mostrarAlerta(context, 'El usuario y contraseña son incorrectos',
             'Información incorrecta');
       } else {
+                 if(data.idTipoUsuario!=proveedor){
+        mostrarAlerta(context, 'El usuario no tiene el perfil para usar la App',
+            'Inicio de sesión incorrecto');
+                  }else{
             Navigator.of(context).pushNamedAndRemoveUntil("/home", (Route<dynamic> route) => false);
+
+                  }
       }
     });
   }

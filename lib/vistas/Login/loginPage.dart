@@ -14,23 +14,22 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  
   SharedPreferences sharedPreferences;
   bool pressbutton = true;
   @override
   void initState() {
-    super.initState();  
+    super.initState();
     checkLoginStatus();
   }
 
   checkLoginStatus() async {
     sharedPreferences = await SharedPreferences.getInstance();
-      var buzon = sharedPreferences.getString("buzon");
-      if (sharedPreferences.getString("buzon")!=null) {
-        Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (BuildContext context) => HomePage()),
-            (Route<dynamic> route) => false);
-      }
+    var buzon = sharedPreferences.getString("buzon");
+    if (sharedPreferences.getString("buzon") != null) {
+      Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (BuildContext context) => HomePage()),
+          (Route<dynamic> route) => false);
+    }
   }
 
   @override
@@ -50,6 +49,7 @@ class _LoginPageState extends State<LoginPage> {
     final email = TextFormField(
       controller: _usernameController,
       keyboardType: TextInputType.text,
+      textInputAction: TextInputAction.none,
       autofocus: false,
       textAlign: TextAlign.center,
       decoration: InputDecoration(
@@ -63,11 +63,26 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
 
+    performLogin(BuildContext context) {
+      String username = _usernameController.text;
+      String password = _passwordController.text;
+      if (username == "" || password == "") {
+        mostrarAlerta(context, 'Es necesario ingresar el usuario y contraseña',
+            'Datos incompletos');
+      } else {
+        logincontroller.validarlogin(context, username, password);
+      }
+      setState(() {
+        pressbutton = true;
+      });
+    }
+
     final password = TextFormField(
       controller: _passwordController,
       autofocus: false,
       obscureText: true,
       textAlign: TextAlign.center,
+      textInputAction: TextInputAction.none,
       decoration: InputDecoration(
         filled: true,
         border: InputBorder.none,
@@ -79,21 +94,6 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
 
-    performLogin(BuildContext context) {
-      String username = _usernameController.text;
-      String password = _passwordController.text;
-      if(username=="" || password==""){
-                mostrarAlerta(context, 'Es necesario ingresar el usuario y contraseña',
-            'Datos incompletos');
-      }else{
-      logincontroller.validarlogin(context, username, password);
-
-      }
-      setState(() {
-        pressbutton = true;
-      });
-    }
-
     final loginButton = Padding(
       padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 70),
       child: RaisedButton(
@@ -101,7 +101,7 @@ class _LoginPageState extends State<LoginPage> {
           borderRadius: BorderRadius.circular(10),
         ),
         onPressed: () {
-               FocusScope.of(context).unfocus();
+          FocusScope.of(context).unfocus();
               new TextEditingController().clear();
           if(pressbutton){
           pressbutton = false;
@@ -135,7 +135,7 @@ class _LoginPageState extends State<LoginPage> {
       backgroundColor: Colors.white,
       body: Center(
           child: ListView(
-        shrinkWrap: true, 
+        shrinkWrap: true,
         padding: EdgeInsets.only(left: 24.0, right: 24.0),
         children: <Widget>[
           titulo,

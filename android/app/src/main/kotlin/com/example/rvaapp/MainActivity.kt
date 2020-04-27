@@ -1,4 +1,4 @@
-package com.example.rvaapp
+package com.exact.pe.rvaapp
 
 import androidx.annotation.NonNull;
 import io.flutter.embedding.android.FlutterActivity
