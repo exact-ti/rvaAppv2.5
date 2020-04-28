@@ -13,6 +13,7 @@ class BuzonModel {
   int idtipo;
   int idactivo;
   int idGrupo;  
+  int idTipoUsuario;
 
     BuzonModel fromProvider(List< dynamic> jsons){
            BuzonModel buzon = new BuzonModel();
@@ -26,7 +27,8 @@ class BuzonModel {
             buzon.fecharegistro = json["dFechaRegistroJSON"];
             buzon.idtipo  = json["iIdTipo"];
             buzon.idactivo  = json["iActivo"];
-            buzon.idGrupo = json["iGrupo"];   
+            buzon.idGrupo = json["iGrupo"];
+            buzon.idTipoUsuario = json["idTipoUsuario"];
         }
           return buzon;
     }

@@ -17,7 +17,7 @@ class RegistroController {
     if(respuesta==false){
       mostrarAlerta(context,"No se pudo completar la operación", "Código incorrecto");
     }else{
-      mostrarAlerta(context,"Se ha registrado correctamente el codigo", "Registro correcto");
+      mostrarAlerta(context,"Registro correcto", "Mensaje");
     }
 
   }

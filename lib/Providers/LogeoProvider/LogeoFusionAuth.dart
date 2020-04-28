@@ -1,7 +1,6 @@
 import 'dart:convert';
-
-import 'package:dio/dio.dart';
 import 'package:http/http.dart' as http;
+import 'package:rvaapp/enum/TipoUsuario.dart';
 import 'LogeoInterface.dart';
 import 'package:rvaapp/Configuration/config.dart';
 import 'package:rvaapp/ModelDto/BuzonModel.dart';
@@ -23,5 +22,5 @@ class LogeoFusionAuth implements LogeoInterface {
     BuzonModel buzonModel = buzonModelclass.fromProvider(decodedData);
 
     return buzonModel;
-  }
+  } 
 }

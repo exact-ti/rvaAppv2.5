@@ -15,14 +15,14 @@ void main() async {
   );
   }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatelessWidget {  
   @override
   Widget build(BuildContext context) { 
     return MaterialApp(
       title: 'Componentes App',
       debugShowCheckedModeBanner: false,
       //home: HomePage()
-      initialRoute: '/login',  
+      initialRoute: true==true ? '/login' :"/dfs",  
       routes: getAplicationRoutes(),
       onGenerateRoute: (settings){
         return MaterialPageRoute(
