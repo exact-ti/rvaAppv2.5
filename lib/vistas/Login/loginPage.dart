@@ -116,13 +116,19 @@ class _LoginPageState extends State<LoginPage> {
     );
 
     final titulo = Text(
-      'login',
+      'Bienvenido operador',
       textAlign: TextAlign.center,
       overflow: TextOverflow.ellipsis,
       style: TextStyle(
-          fontWeight: FontWeight.bold, fontSize: 40, color: Colors.blueGrey),
+          fontWeight: FontWeight.bold, fontSize: 30, color: Colors.blueGrey),
     );
-
+    final titulo2 = Text(
+      'de valijas',
+      textAlign: TextAlign.center,
+      overflow: TextOverflow.ellipsis,
+      style: TextStyle(
+          fontWeight: FontWeight.bold, fontSize: 30, color: Colors.blueGrey),
+    );
 /* 
     final letrafooter = Text(
       'Forgot password?',
@@ -139,6 +145,7 @@ class _LoginPageState extends State<LoginPage> {
         padding: EdgeInsets.only(left: 24.0, right: 24.0),
         children: <Widget>[
           titulo,
+          titulo2,
           SizedBox(height: 24.0),
           logo,
           SizedBox(height: 48.0),
