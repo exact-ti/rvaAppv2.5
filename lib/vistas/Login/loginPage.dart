@@ -88,7 +88,7 @@ class _LoginPageState extends State<LoginPage> {
         border: InputBorder.none,
         focusedBorder: InputBorder.none,
         fillColor: Color(0xffF0F3F4),
-        hintText: 'password',
+        hintText: 'contraseña',
         contentPadding: EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 20.0),
         //border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0)),
       ),
@@ -116,14 +116,14 @@ class _LoginPageState extends State<LoginPage> {
     );
 
     final titulo = Text(
-      'Bienvenido operador',
+      'Bienvenido Operador',
       textAlign: TextAlign.center,
       overflow: TextOverflow.ellipsis,
       style: TextStyle(
           fontWeight: FontWeight.bold, fontSize: 30, color: Colors.blueGrey),
     );
     final titulo2 = Text(
-      'de valijas',
+      'de Valijas',
       textAlign: TextAlign.center,
       overflow: TextOverflow.ellipsis,
       style: TextStyle(

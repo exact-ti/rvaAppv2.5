@@ -18,7 +18,21 @@ class AgenciaModel {
       agencia.idtipo = json["idTipoTraslado"];
       agencia.nombretipo = json["tipoTraslado"];
       agencia.estado = json["idEstadoTraslado"];
+      agencias.add(agencia);
+    }
+    return agencias;
+  }
 
+
+    List<AgenciaModel> fromProviderEntrega(List<dynamic> jsons) {
+    List<AgenciaModel> agencias = List();
+    for (Map<String, dynamic> json in jsons) {
+      AgenciaModel agencia = new AgenciaModel();
+      agencia.nombre = json["nombreAgencia"];
+      agencia.id = json["sId"];
+      agencia.idtipo = json["idTipoTraslado"];
+      agencia.nombretipo = json["tipoTraslado"];
+      agencia.estado = json["idEstadoTraslado"];
       agencias.add(agencia);
     }
     return agencias;
