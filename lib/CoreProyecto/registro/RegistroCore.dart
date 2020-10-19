@@ -20,15 +20,36 @@ class RegistroCore implements IRegistroCore {
   }
 
   @override
-  Future<bool> registrocodigoCore(String codigo) async{
-        bool respuesta = await registro.registroCodigo(codigo);
+  Future<bool> registrocodigoCore(String codigo,bool modo,String codigoSobre) async{
+        bool respuesta;
+    if(modo){
+    respuesta = await registro.registroCodigo(codigo,codigoSobre);
+    }else{
+    respuesta  = await registro.registroCodigoEntrega(codigo,codigoSobre);
 
+    }
         return respuesta;
   }
 
   @override
-  Future<List<AgenciaModel>> listarAgencias(String codigo) async {
-     List<AgenciaModel> agencias = await registro.listarAgencia(codigo);
+  Future<List<AgenciaModel>> listarAgencias(String codigo, bool modo) async {
+    List<AgenciaModel> agencias;
+    int indice;
+
+    if(modo){
+      indice=1;
+    }else{
+      indice=2;
+    }
+
+    agencias = await registro.listarAgenciaModalidad(codigo,indice);
+
+   /* if(modo){
+    agencias = await registro.listarAgenciaRecojo(codigo);
+    }else{
+    agencias = await registro.listarAgenciaEntrega(codigo);
+
+    }*/
         return agencias;
   }
 }

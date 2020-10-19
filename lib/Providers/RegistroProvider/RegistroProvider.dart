@@ -14,8 +14,33 @@ class RegistroProvider implements IRegistroProvider {
   BuzonModel buzonModelclass = new BuzonModel();
   AgenciaModel agenciaModel = new AgenciaModel();
   final _prefs = new PreferenciasUsuario();
+    @override
+  Future<bool> registroCodigoEntrega(String codigo,String codigoSobre) async {
+    Map<String, dynamic> buzon = json.decode(_prefs.buzon);
+    BuzonModel bznmodel = buzonModelclass.fromPreferencs(buzon);
+    String idbuzon = bznmodel.idUsuario;
+    final url = "/AgenciaTrasladoWS.asmx/RegistrarEntregaProveedor";
+
+    Map<String, dynamic> jsonMap = {
+      'codigoUsuario': idbuzon,
+      'codigoAgencia': codigo,
+      'comprobante': codigoSobre
+    };
+
+    final respuesta = await http.post(properties['API'] + url,
+        body: jsonMap,
+        headers: {"Content-Type": "application/x-www-form-urlencoded"},
+        encoding: Encoding.getByName("utf-8"));
+
+    var res = json.decode(respuesta.body);
+    if (res == 1) {
+      return true;
+    } else {
+      return false;
+    }
+  }
   @override
-  Future<bool> registroCodigo(String codigo) async {
+  Future<bool> registroCodigo(String codigo, String codigoSobre) async {
     Map<String, dynamic> buzon = json.decode(_prefs.buzon);
     BuzonModel bznmodel = buzonModelclass.fromPreferencs(buzon);
     String idbuzon = bznmodel.idUsuario;
@@ -23,7 +48,8 @@ class RegistroProvider implements IRegistroProvider {
 
     Map<String, dynamic> jsonMap = {
       'codigoUsuario': idbuzon,
-      'codigoAgencia': codigo
+      'codigoAgencia': codigo,
+      'comprobante': codigoSobre
     };
 
     final respuesta = await http.post(properties['API'] + url,
@@ -40,7 +66,7 @@ class RegistroProvider implements IRegistroProvider {
   }
 
   @override
-  Future<List<AgenciaModel>> listarAgencia(String codigo) async {
+  Future<List<AgenciaModel>> listarAgenciaRecojo(String codigo) async {
     Map<String, dynamic> buzon = json.decode(_prefs.buzon);
     BuzonModel bznmodel = buzonModelclass.fromPreferencs(buzon);
     String idbuzon = bznmodel.idUsuario;
@@ -65,5 +91,60 @@ class RegistroProvider implements IRegistroProvider {
   
   }
 
+
+
+  @override
+  Future<List<AgenciaModel>> listarAgenciaModalidad(String codigo,int indice) async {
+    Map<String, dynamic> buzon = json.decode(_prefs.buzon);
+    BuzonModel bznmodel = buzonModelclass.fromPreferencs(buzon);
+    String idbuzon = bznmodel.idUsuario;
+    final url = "/AgenciaWS.asmx/FiltrarAgenciaPorCodigoProveedor";
+
+    Map<String, dynamic> jsonMap = {
+      'codigoUsuario': idbuzon,
+      'codigoAgencia': codigo,
+      'idTipoRegistro': "$indice"
+    };
+
+    final respuesta = await http.post(properties['API'] + url,
+        body: jsonMap,
+        headers: {"Content-Type": "application/x-www-form-urlencoded"},
+        encoding: Encoding.getByName("utf-8"));
+
+      List<dynamic> decodedData = json.decode(respuesta.body);
+      List<AgenciaModel> agencias = agenciaModel.fromProvider(decodedData);
+      if(agencias.length==0){
+        return null;
+      }
+      return agencias;
+  
+  }
+
+
+  @override
+  Future<List<AgenciaModel>> listarAgenciaEntrega(String codigo) async {
+    Map<String, dynamic> buzon = json.decode(_prefs.buzon);
+    BuzonModel bznmodel = buzonModelclass.fromPreferencs(buzon);
+    String idbuzon = bznmodel.idUsuario;
+    final url = "/AgenciaWS.asmx/FiltrarAgenciaPorCodigoProveedor";
+
+    Map<String, dynamic> jsonMap = {
+      'codigoUsuario': idbuzon,
+      'codigoAgencia': codigo
+    };
+
+    final respuesta = await http.post(properties['API'] + url,
+        body: jsonMap,
+        headers: {"Content-Type": "application/x-www-form-urlencoded"},
+        encoding: Encoding.getByName("utf-8"));
+
+      List<dynamic> decodedData = json.decode(respuesta.body);
+      List<AgenciaModel> agencias = agenciaModel.fromProviderEntrega(decodedData);
+      if(agencias.length==0){
+        return null;
+      }
+      return agencias;
+  
+  }
 
 }

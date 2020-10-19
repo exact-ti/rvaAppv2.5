@@ -12,8 +12,8 @@ class RegistroController {
 
   IRegistroCore intersedeInterface =new RegistroCore(new RegistroProvider());
 
-  void recogerdocumento(BuildContext context, String codigo) async {
-    bool respuesta = await intersedeInterface.registrocodigoCore(codigo);
+  void recogerdocumento(BuildContext context, String codigo,String codigosobre, bool modo) async {
+    bool respuesta = await intersedeInterface.registrocodigoCore(codigo,modo,codigosobre);
     if(respuesta==false){
       mostrarAlerta(context,"No se pudo completar la operación", "Código incorrecto");
     }else{
@@ -21,10 +21,8 @@ class RegistroController {
     }
 
   }
-
-
-    Future<List<AgenciaModel>>  listarAgencias(String codigo) async {
-       List<AgenciaModel> agencias =  await intersedeInterface.listarAgencias(codigo);
+    Future<List<AgenciaModel>>  listarAgencias(String codigo, bool modo) async {
+       List<AgenciaModel> agencias =  await intersedeInterface.listarAgencias(codigo,modo);
         return agencias;
     }
 
