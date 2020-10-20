@@ -2,8 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:rvaapp/src/CoreProyecto/RegistroCore/IRegistro.core.dart';
 import 'package:rvaapp/src/CoreProyecto/RegistroCore/Registro.core.dart';
-import 'package:rvaapp/src/ModelDto/AgenciaModel.dart';
 import 'package:rvaapp/src/Providers/RegistroProvider/Registro.provider.dart';
+import 'package:rvaapp/src/models/AgenciaModel.dart';
 import 'package:rvaapp/src/shared/modals/notification.dart';
  
 

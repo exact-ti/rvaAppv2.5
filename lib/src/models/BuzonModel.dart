@@ -44,7 +44,8 @@ class BuzonModel {
             buzones.fecharegistro = json["dFechaRegistroJSON"];
             buzones.idtipo  = json["iIdTipo"];
             buzones.idactivo  = json["iActivo"];
-            buzones.idGrupo = json["iGrupo"];                        
+            buzones.idGrupo = json["iGrupo"];   
+            buzones.idTipoUsuario = json["idTipoUsuario"];                     
           return buzones;
     }
   
@@ -57,7 +58,8 @@ class BuzonModel {
         "dFechaRegistroJSON"  : fecharegistro,
         "iIdTipo"         : idtipo,
         "iActivo"     : idactivo,
-        "iGrupo"  : idGrupo,        
+        "iGrupo"  : idGrupo,   
+        "idTipoUsuario" : idTipoUsuario    
     };
 
 }

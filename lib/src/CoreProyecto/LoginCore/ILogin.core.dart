@@ -1,5 +1,5 @@
-import 'package:rvaapp/src/ModelDto/BuzonModel.dart';
+import 'package:flutter/material.dart';
 
 abstract class ILoginCore {
-  Future<BuzonModel> login(String username, String password);
+  Future<bool> login(String username, String password,BuildContext context);
 }

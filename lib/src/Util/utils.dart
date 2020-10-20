@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:rvaapp/src/ModelDto/BuzonModel.dart';
-import 'package:rvaapp/src/pages/LoginPage/Login.page.dart';
+import 'package:rvaapp/src/models/BuzonModel.dart';
 import 'package:rvaapp/src/preferencias_usuario/preferencias_usuario.dart';
+import 'package:rvaapp/src/services/locator.dart';
+import 'package:rvaapp/src/services/navigation_service_file.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 var colorletra = const Color(0xFFACADAD);
@@ -12,23 +13,8 @@ const colorback = const Color(0xFFD2E3EA);
 const colorred = const Color(0xFFFF7375);
 final _prefs = new PreferenciasUsuario();
 BuzonModel buzonModel = new BuzonModel(); 
+final NavigationService _navigationService = locator<NavigationService>();
 
-void mostrarAlerta(BuildContext context, String mensaje, String titulo) {
-  showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('$titulo'),
-          content: Text(mensaje),
-          actions: <Widget>[
-            FlatButton(
-              child: Text('Ok'),
-              onPressed: () => Navigator.of(context).pop(),
-            )
-          ],
-        );
-      });
-}
 
 Drawer crearMenu(BuildContext context) {
   return Drawer(
@@ -49,14 +35,12 @@ Future<bool> confirmarRespuesta(
             FlatButton(
               onPressed: () {
                 Navigator.pop(context, true);
-                // Navigator.of(context).pop();
               },
               child: Text('Aceptar'),
             ),
             FlatButton(
               onPressed: () {
                 Navigator.pop(context, false);
-                // Navigator.of(context).pop();
                 return false;
               },
               child: Text('Cancelar'),
@@ -118,9 +102,13 @@ void eliminarpreferences(BuildContext context) async {
   sharedPreferences = await SharedPreferences.getInstance();
       sharedPreferences.clear();
       sharedPreferences.commit();
-      Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (BuildContext context) => LoginPage()),
-          (Route<dynamic> route) => false);
+     _navigationService.navigationTo("/login");
+}
+
+void desenfocarInputfx(BuildContext context) {
+  FocusScope.of(context).unfocus();
+  FocusScope.of(context).requestFocus(new FocusNode()); //remove focus
+  new TextEditingController().clear();
 }
 
 
@@ -177,6 +165,12 @@ String buzonId(){
   BuzonModel bznmodel = buzonModel.fromPreferencs(buzon);
   String idbuzon = bznmodel.idUsuario;
   return idbuzon;
+}
+
+BuzonModel buzonPreferences(){
+  Map<String, dynamic> buzon = json.decode(_prefs.buzon);
+  if(buzon==null) return null;
+  return buzonModel.fromPreferencs(buzon);
 }
 
 

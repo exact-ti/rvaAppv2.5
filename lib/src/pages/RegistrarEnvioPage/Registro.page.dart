@@ -1,10 +1,14 @@
+import 'dart:collection';
+
 import 'package:barcode_scan/barcode_scan.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import 'package:rvaapp/src/Configuration/config.dart';
-import 'package:rvaapp/src/ModelDto/AgenciaModel.dart';
 import 'package:rvaapp/src/Util/utils.dart';
-import 'package:rvaapp/src/Util/widgets.dart';
+import 'package:rvaapp/src/models/AgenciaModel.dart';
+import 'package:rvaapp/src/pages/layout/app-bar/AppBar.page.dart';
+import 'package:rvaapp/src/services/notificationProvider.dart';
 import 'package:rvaapp/src/shared/modals/notification.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'Registro.controller.dart';
@@ -32,30 +36,29 @@ class _HomePageState extends State<HomePage> {
   bool buttoncamera = true;
   bool buttoncamera2 = true;
   bool isSwitched = true;
-  FocusNode _focusNode;
   FocusNode f1 = FocusNode();
   FocusNode f2 = FocusNode();
   int valorminimo;
   int valormaximo;
+  Map<String, Object> dataSwitch = new HashMap();
   //Widget proba = Container();
   @override
   void initState() {
-    valorminimo = properties['CARACTERES_MINIMOS'];
-    valormaximo = properties['CARACTERES_MAXIMOS'];
+    inicializarState();
     super.initState();
-    _focusNode = FocusNode();
-    _focusNode.addListener(() {
-      if (_focusNode.hasFocus) _bandejaController.clear();
-    });
-    cargarPreferences();
+  }
+
+  inicializarState() {
+    if (mounted) {
+      valorminimo = properties['CARACTERES_MINIMOS'];
+      valormaximo = properties['CARACTERES_MAXIMOS'];
+    }
   }
 
   var colorplomos = const Color(0xFFEAEFF2);
   @override
   Widget build(BuildContext context) {
     const SecondColor = const Color(0xFF6698AE);
-    WidgetsBinding.instance.addPostFrameCallback((_) => onAfterBuild(context));
-
     void verificarenvio(BuildContext context) {
       if (_bandejaController.text != "") {
         if (_sobreController.text != "") {
@@ -72,8 +75,7 @@ class _HomePageState extends State<HomePage> {
               codigosobre = "";
               buttonsend = true;
             });
-            FocusScope.of(context).unfocus();
-            new TextEditingController().clear();
+            desenfocarInputfx(context);
           } else {
             if (_sobreController.text.length <
                 properties['CARACTERES_MINIMOS']) {
@@ -270,50 +272,102 @@ class _HomePageState extends State<HomePage> {
       }
     }
 
-    final valorswitch = Center(
-      child: Switch(
-        value: isSwitched,
-        onChanged: (value) {
-          FocusScope.of(context).unfocus();
-          new TextEditingController().clear();
-          setState(() {
-            isSwitched = value;
-            _bandejaController.text = "";
-            _sobreController.text = "";
-            respondio = false;
-            codigobandeja = "";
-            codigosobre = "";
-            agencias = null;
-            validarboton = false;
-            qrbarra = "";
-            cantidadrespuesta = 0;
-            estadoenvio = 0;
-            buttonsend = true;
-            buttoncamera = true;
-            buttoncamera2 = true;
-          });
-        },
-        activeTrackColor: SecondColor,
-        activeColor: PrimaryColor,
-      ),
-    );
+    inicializarValores() {
+      setState(() {
+        _bandejaController.text = "";
+        _sobreController.text = "";
+        respondio = false;
+        codigobandeja = "";
+        codigosobre = "";
+        agencias = null;
+        validarboton = false;
+        qrbarra = "";
+        cantidadrespuesta = 0;
+        estadoenvio = 0;
+        buttonsend = true;
+        buttoncamera = true;
+        buttoncamera2 = true;
+      });
+    }
 
-    final contenerSwitch2 = Container(
+    Widget switchDoble(bool switchParam) {
+      return Center(
+        child: Switch(
+          value: switchParam,
+          onChanged: (value) {
+            desenfocarInputfx(context);
+            setState(() {
+              isSwitched = value;
+            });
+            inicializarValores();
+          },
+          activeTrackColor: SecondColor,
+          activeColor: PrimaryColor,
+        ),
+      );
+    }
+
+    Widget switchOne(bool switchParam) {
+      setState(() {
+      isSwitched=switchParam;
+      });
+      return Center(
+        child: Switch(
+          value: switchParam,
+          onChanged: (value) {
+/*           desenfocarInputfx(context);
+          inicializarValores(); */
+          },
+          activeTrackColor: SecondColor,
+          activeColor: PrimaryColor,
+        ),
+      );
+    }
+
+    Widget validarTextSwitch() {
+      if (Provider.of<NotificationConfiguration>(context).validarenvio && Provider.of<NotificationConfiguration>(context).validarrecojo) {
+        return Container(
+          child: isSwitched != true ? Text("En entrega") : Text("En recojo"),
+        );
+      } else {
+        if (Provider.of<NotificationConfiguration>(context).validarrecojo) {
+          return Container(
+            child: Text("En recojo"),
+          );
+        } else {
+          return Container(
+            child: Text("En entrega"),
+          );
+        }
+      }
+    }
+
+    Widget validartypeSwitch() {
+      if (Provider.of<NotificationConfiguration>(context).validarenvio && Provider.of<NotificationConfiguration>(context).validarrecojo) {
+        return switchDoble(isSwitched);
+      } else {
+        if (Provider.of<NotificationConfiguration>(context).validarrecojo) {
+          return switchOne(true);
+        } else {
+          return switchOne(false);
+        }
+      }
+    }
+
+    final contenerSwitch = Container(
       child:
           Row(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
         Container(
           padding: const EdgeInsets.all(0.0),
-          child: valorswitch,
+          child: validartypeSwitch(),
         ),
-        /*valorswitch,*/
         Expanded(
-          child: Container(
-            child: isSwitched != true ? Text("En entrega") : Text("En recojo"),
-          ),
+          child: validarTextSwitch(),
           flex: 3,
         )
       ]),
     );
+
     Widget mostrarmensaje() {
       return Container(
         height: screenHeightExcludingToolbar(context, dividedBy: 10),
@@ -382,8 +436,8 @@ class _HomePageState extends State<HomePage> {
 
     void validarLista2() async {
       if (_sobreController.text.length < properties['CARACTERES_MINIMOS']) {
-        mostrarAlerta(
-            context, "Complete al menos $valorminimo caracteres", "Error");
+        notification(context, "error", "EXACT",
+            "Complete al menos $valorminimo caracteres");
         setState(() {
           _sobreController.text = "";
           codigosobre = "";
@@ -391,8 +445,8 @@ class _HomePageState extends State<HomePage> {
         });
       }
       if (_sobreController.text.length > properties['CARACTERES_MAXIMOS']) {
-        mostrarAlerta(
-            context, "El código sobrepasa los caracteres máximos", "Error");
+        notification(context, "error", "EXACT",
+            "El código sobrepasa los caracteres máximos");
         setState(() {
           _sobreController.text = "";
           codigosobre = "";
@@ -412,8 +466,7 @@ class _HomePageState extends State<HomePage> {
     Future _traerdatosescanerBandeja() async {
       if (buttoncamera) {
         buttoncamera = false;
-        FocusScope.of(context).unfocus();
-        new TextEditingController().clear();
+        desenfocarInputfx(context);
         var result = await BarcodeScanner.scan();
         _bandejaController.text = result.rawContent;
         codigobandeja = result.rawContent;
@@ -424,8 +477,7 @@ class _HomePageState extends State<HomePage> {
     Future _traerdatosescanerSobre() async {
       if (buttoncamera2) {
         buttoncamera2 = false;
-        FocusScope.of(context).unfocus();
-        new TextEditingController().clear();
+        desenfocarInputfx(context);
         var result = await BarcodeScanner.scan();
         _sobreController.text = result.rawContent;
         codigosobre = result.rawContent;
@@ -446,8 +498,8 @@ class _HomePageState extends State<HomePage> {
           });*/
 
           if (value.length < properties['CARACTERES_MINIMOS']) {
-            mostrarAlerta(
-                context, "Complete al menos $valorminimo caracteres", "Error");
+            notification(context, "Error", "EXACT",
+                "Complete al menos $valorminimo caracteres");
             FocusScope.of(context).requestFocus(f2);
 
             /*setState(() {
@@ -456,8 +508,8 @@ class _HomePageState extends State<HomePage> {
             });*/
           }
           if (value.length > properties['CARACTERES_MAXIMOS']) {
-            mostrarAlerta(
-                context, "El código sobrepasa los caracteres máximos", "Error");
+            notification(context, "Error", "EXACT",
+                "El código sobrepasa los caracteres máximos");
             FocusScope.of(context).requestFocus(f2);
             /*setState(() {
               _sobreController.text = "";
@@ -466,8 +518,7 @@ class _HomePageState extends State<HomePage> {
           }
           if (value.length >= properties['CARACTERES_MINIMOS'] &&
               value.length < properties['CARACTERES_MAXIMOS']) {
-            FocusScope.of(context).unfocus();
-            new TextEditingController().clear();
+            desenfocarInputfx(context);
             setState(() {
               _sobreController.text = _sobreController.text;
               codigosobre = codigosobre;
@@ -519,15 +570,16 @@ class _HomePageState extends State<HomePage> {
             } else {
               FocusScope.of(context).requestFocus(f1);
               if (codigobandeja.length < valorminimo) {
-                mostrarAlerta(context, 'Llene al menos $valorminimo caracteres',
-                    'Mensaje');
+                notification(context, "Error", "EXACT",
+                    'Llene al menos $valorminimo caracteres');
               }
 
               if (estadoenvio == 0 && codigobandeja.length >= valorminimo) {
-                mostrarAlerta(context, 'No hay va', 'Mensaje');
+                notification(context, "Error", "EXACT", 'No hay va');
               }
               if (estadoenvio == 2) {
-                mostrarAlerta(context, 'La agencia ya fue visitada', 'Mensaje');
+                notification(
+                    context, "Error", "EXACT", 'La agencia ya fue visitada');
               }
             }
           } else {
@@ -537,23 +589,24 @@ class _HomePageState extends State<HomePage> {
               FocusScope.of(context).requestFocus(f2);
             } else {
               if (codigobandeja.length < valorminimo) {
-                mostrarAlerta(context, 'Llene al menos $valorminimo caracteres',
-                    'Mensaje');
+                notification(context, "Error", "EXACT",
+                    'Llene al menos $valorminimo caracteres');
               }
               if (codigobandeja.length > valormaximo) {
-                mostrarAlerta(context,
-                    'No sobrepase los $valormaximo caracteres', 'Mensaje');
+                notification(context, "Error", "EXACT",
+                    'No sobrepase los $valormaximo caracteres');
               }
 
               if (estadoentrega == 0) {
-                mostrarAlerta(context, 'No existe la agencia', 'Mensaje');
+                notification(context, "Error", "EXACT", 'No existe la agencia');
               }
               if (estadoentrega == 1) {
-                mostrarAlerta(context, 'No hay valijas pendientes', 'Mensaje');
+                notification(
+                    context, "Error", "EXACT", 'No hay valijas pendientes');
               }
               if (estadoentrega == 7) {
-                mostrarAlerta(
-                    context, 'Las valijas ya fueron entregadas', 'Mensaje');
+                notification(context, "Error", "EXACT",
+                    'Las valijas ya fueron entregadas');
               }
               f1.unfocus();
               FocusScope.of(context).requestFocus(f1);
@@ -618,7 +671,7 @@ class _HomePageState extends State<HomePage> {
     ]);
 
     return Scaffold(
-        appBar: ReusableWidgets.getAppBar('Registro de visita'),
+        appBar: CustomAppBar(text: "Registro de visita"),
         drawer: crearMenu(context),
         bottomNavigationBar: BottomAppBar(
           color: Colors.transparent,
@@ -636,86 +689,41 @@ class _HomePageState extends State<HomePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Container(
-                    alignment: Alignment.bottomLeft,
-                    height:
-                        screenHeightExcludingToolbar(context, dividedBy: 12),
-                    width: double.infinity,
-                    child: contenerSwitch2),
-              ),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Container(
-                    margin: const EdgeInsets.only(top: 20),
-                    alignment: Alignment.bottomLeft,
-                    height:
-                        screenHeightExcludingToolbar(context, dividedBy: 30),
-                    width: double.infinity,
-                    child: textBandeja),
-              ),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Container(
-                    margin: const EdgeInsets.only(bottom: 10),
-                    alignment: Alignment.centerLeft,
-                    height:
-                        screenHeightExcludingToolbar(context, dividedBy: 12),
-                    width: double.infinity,
-                    child: campodetextoandIconoBandeja),
-              ),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Container(
-                    alignment: Alignment.bottomLeft,
-                    height:
-                        screenHeightExcludingToolbar(context, dividedBy: 30),
-                    width: double.infinity,
-                    child: textSobre),
-              ),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Container(
-                    margin: const EdgeInsets.only(bottom: 40),
-                    alignment: Alignment.centerLeft,
-                    height:
-                        screenHeightExcludingToolbar(context, dividedBy: 12),
-                    width: double.infinity,
-                    child: campodetextoandIconoSobre),
-              ),
-              Align(
-                alignment: Alignment.center,
-                child: Container(
-                    alignment: Alignment.center,
-                    height:
-                        screenHeightExcludingToolbar(context, dividedBy: 10),
-                    width: double.infinity,
-                    child:
-                        codigobandeja.length < properties['CARACTERES_MINIMOS']
-                            ? Container()
-                            : listarwidget(agencias)),
-              ),
-              /*Align(
-                alignment: Alignment.center,
-                child: Container(
-                    alignment: FractionalOffset.bottomCenter,
-                    height: screenHeightExcludingToolbar(context, dividedBy: 5),
-                    width: double.infinity,
-                    child: sendButton),
-              )*/
+              Container(
+                  alignment: Alignment.bottomLeft,
+                  margin: const EdgeInsets.only(top: 10),
+                  width: double.infinity,
+                  child: contenerSwitch),
+              Container(
+                  margin: const EdgeInsets.only(top: 20, bottom: 10),
+                  alignment: Alignment.bottomLeft,
+                  width: double.infinity,
+                  child: textBandeja),
+              Container(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  alignment: Alignment.centerLeft,
+                  width: double.infinity,
+                  child: campodetextoandIconoBandeja),
+              Container(
+                  margin: const EdgeInsets.only(top: 20, bottom: 10),
+                  alignment: Alignment.bottomLeft,
+                  width: double.infinity,
+                  child: textSobre),
+              Container(
+                  margin: const EdgeInsets.only(bottom: 40),
+                  alignment: Alignment.centerLeft,
+                  width: double.infinity,
+                  child: campodetextoandIconoSobre),
+              Container(
+                  alignment: Alignment.center,
+                  height: screenHeightExcludingToolbar(context, dividedBy: 10),
+                  width: double.infinity,
+                  child: codigobandeja.length < properties['CARACTERES_MINIMOS']
+                      ? Container()
+                      : listarwidget(agencias)),
             ],
           ),
         )));
-  }
-
-  Size screenSize(BuildContext context) {
-    return MediaQuery.of(context).size;
-  }
-
-  double screenHeight(BuildContext context,
-      {double dividedBy = 1, double reducedBy = 0.0}) {
-    return (screenSize(context).height - reducedBy) / dividedBy;
   }
 
   BoxDecoration myBoxDecoration(int i) {
@@ -745,17 +753,4 @@ class _HomePageState extends State<HomePage> {
       );
     }
   }
-
-  double screenHeightExcludingToolbar(BuildContext context,
-      {double dividedBy = 1}) {
-    return screenHeight(context,
-        dividedBy: dividedBy, reducedBy: kToolbarHeight);
-  }
-
-  void cargarPreferences() async {
-    sharedPreferences = await SharedPreferences.getInstance();
-    print("FSDF");
-  }
-
-  onAfterBuild(BuildContext context) {}
 }

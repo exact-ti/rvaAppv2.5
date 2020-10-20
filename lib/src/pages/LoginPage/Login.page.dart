@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:rvaapp/src/Util/utils.dart';
 import 'package:rvaapp/src/pages/RegistrarEnvioPage/Registro.page.dart';
+import 'package:rvaapp/src/shared/modals/notification.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'Login.controller.dart';
 
 class LoginPage extends StatefulWidget {
-  static String tag = 'login-page';
-
   @override
   _LoginPageState createState() => new _LoginPageState();
 }
@@ -15,6 +13,9 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   SharedPreferences sharedPreferences;
   bool pressbutton = true;
+  final _usernameController = TextEditingController();
+  final _passwordController = TextEditingController();
+  LoginController logincontroller = new LoginController();
   @override
   void initState() {
     super.initState();
@@ -24,6 +25,7 @@ class _LoginPageState extends State<LoginPage> {
   checkLoginStatus() async {
     sharedPreferences = await SharedPreferences.getInstance();
     if (sharedPreferences.getString("buzon") != null) {
+      logincontroller.validarUsoApp(context);
       Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (BuildContext context) => HomePage()),
           (Route<dynamic> route) => false);
@@ -32,10 +34,6 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    final _usernameController = TextEditingController();
-    final _passwordController = TextEditingController();
-    LoginController logincontroller = new LoginController();
-
     final logo = Hero(
         tag: 'hero',
         child: CircleAvatar(
@@ -57,7 +55,6 @@ class _LoginPageState extends State<LoginPage> {
         fillColor: Color(0xffF0F3F4),
         hintText: 'Usuario',
         contentPadding: EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 20.0),
-        //border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0)),
       ),
     );
 
@@ -65,8 +62,8 @@ class _LoginPageState extends State<LoginPage> {
       String username = _usernameController.text;
       String password = _passwordController.text;
       if (username == "" || password == "") {
-        mostrarAlerta(context, 'Es necesario ingresar el usuario y contraseña',
-            'Datos incompletos');
+        notification(context, "error", "EXACT",
+            'Es necesario ingresar el usuario y contraseña');
       } else {
         logincontroller.validarlogin(context, username, password);
       }
@@ -88,7 +85,6 @@ class _LoginPageState extends State<LoginPage> {
         fillColor: Color(0xffF0F3F4),
         hintText: 'contraseña',
         contentPadding: EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 20.0),
-        //border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0)),
       ),
     );
 
@@ -100,12 +96,11 @@ class _LoginPageState extends State<LoginPage> {
         ),
         onPressed: () {
           FocusScope.of(context).unfocus();
-              new TextEditingController().clear();
-          if(pressbutton){
-          pressbutton = false;
-          performLogin(context);
-          } 
-          //Navigator.of(context).pushNamed("principal");
+          new TextEditingController().clear();
+          if (pressbutton) {
+            pressbutton = false;
+            performLogin(context);
+          }
         },
         padding: EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 20.0),
         color: Colors.lightBlueAccent,
@@ -113,27 +108,15 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
 
-    final titulo = Text(
-      'Bienvenido Operador',
-      textAlign: TextAlign.center,
-      overflow: TextOverflow.ellipsis,
-      style: TextStyle(
-          fontWeight: FontWeight.bold, fontSize: 30, color: Colors.blueGrey),
-    );
-    final titulo2 = Text(
-      'de Valijas',
-      textAlign: TextAlign.center,
-      overflow: TextOverflow.ellipsis,
-      style: TextStyle(
-          fontWeight: FontWeight.bold, fontSize: 30, color: Colors.blueGrey),
-    );
-/* 
-    final letrafooter = Text(
-      'Forgot password?',
-      textAlign: TextAlign.center,
-       overflow: TextOverflow.ellipsis,
-         style: TextStyle( fontSize: 18,color: Colors.lightBlue ),
-    ); */
+    Widget titulo(String texto) {
+      return Text(
+        texto,
+        textAlign: TextAlign.center,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+            fontWeight: FontWeight.bold, fontSize: 30, color: Colors.blueGrey),
+      );
+    }
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -142,8 +125,8 @@ class _LoginPageState extends State<LoginPage> {
         shrinkWrap: true,
         padding: EdgeInsets.only(left: 24.0, right: 24.0),
         children: <Widget>[
-          titulo,
-          titulo2,
+          titulo('Bienvenido Operador'),
+          titulo('de Valijas'),
           SizedBox(height: 24.0),
           logo,
           SizedBox(height: 48.0),

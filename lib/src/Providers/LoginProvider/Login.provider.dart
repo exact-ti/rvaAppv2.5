@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
-import 'package:rvaapp/src/ModelDto/BuzonModel.dart';
 import 'package:rvaapp/src/Requester/Requester.dart';
+import 'package:rvaapp/src/models/BuzonModel.dart';
 import 'ILogin.provider.dart';
 
 class LoginProvider implements ILoginProvider {

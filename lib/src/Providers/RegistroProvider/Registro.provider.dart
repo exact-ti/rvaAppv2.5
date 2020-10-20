@@ -1,6 +1,6 @@
-import 'package:rvaapp/src/ModelDto/AgenciaModel.dart';
-import 'package:rvaapp/src/ModelDto/BuzonModel.dart';
 import 'package:rvaapp/src/Requester/Requester.dart';
+import 'package:rvaapp/src/models/AgenciaModel.dart';
+import 'package:rvaapp/src/models/BuzonModel.dart';
 import 'IRegistro.provider.dart';
 import 'package:dio/dio.dart';
 

@@ -1,5 +1,7 @@
 import 'dart:convert';
-import 'package:rvaapp/src/ModelDto/BuzonModel.dart';
+import 'package:barcode_scan/gen/protos/protos.pb.dart';
+import 'package:rvaapp/src/models/BuzonModel.dart';
+import 'package:rvaapp/src/models/ConfigurationModel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /*
@@ -27,7 +29,6 @@ class PreferenciasUsuario {
     this._prefs = await SharedPreferences.getInstance();
   }
 
-  // GET y SET de la última página
   get token {
     return _prefs.getString('token') ?? '';
   }
@@ -52,9 +53,14 @@ class PreferenciasUsuario {
     _prefs.setString("buzon", json.encode(utd));
   }
 
+  get configurationModel {
+    return _prefs.getString("configurationModel");
+  }
 
+  set configurationModel (ConfigurationModel configurationModel) {
+    _prefs.setString("configurationModel", json.encode(configurationModel));
+  }
 
-  // GET y SET de la última página
   get ultimaPagina {
     return _prefs.getString('ultimaPagina') ?? 'login';
   }

@@ -1,7 +1,7 @@
-import 'package:rvaapp/src/ModelDto/AgenciaModel.dart';
 import 'package:rvaapp/src/Providers/RegistroProvider/IRegistro.provider.dart';
 import 'package:rvaapp/src/Providers/RegistroProvider/Registro.provider.dart';
 import 'package:rvaapp/src/Util/utils.dart';
+import 'package:rvaapp/src/models/AgenciaModel.dart';
 import 'IRegistro.core.dart';
 
 class RegistroCore implements IRegistroCore {
