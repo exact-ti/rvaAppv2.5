@@ -6,15 +6,9 @@ import 'package:rvaapp/src/services/locator.dart';
 import 'package:rvaapp/src/services/navigation_service_file.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-var colorletra = const Color(0xFFACADAD);
-var colorletra2 = const Color(0xFF466C7A);
-const PrimaryColor = const Color(0xFF2C6983);
-const colorback = const Color(0xFFD2E3EA);
-const colorred = const Color(0xFFFF7375);
 final _prefs = new PreferenciasUsuario();
 BuzonModel buzonModel = new BuzonModel(); 
 final NavigationService _navigationService = locator<NavigationService>();
-
 
 Drawer crearMenu(BuildContext context) {
   return Drawer(
@@ -83,6 +77,13 @@ List<Widget> milistview(BuildContext context) {
         image: DecorationImage(
             image: AssetImage('assets/original.jpg'), fit: BoxFit.cover)),
   ));
+
+    list.add(ListTile(
+        leading: Icon(Icons.check_circle_outline, color: Colors.blue),
+        title: Text("Registro"),
+        onTap: () {
+         Navigator.pushReplacementNamed(context, "/home");
+        }));
     list.add(cerrarsesion(context));
   }
   return list;
@@ -139,22 +140,10 @@ double screenHeightExcludingToolbar(BuildContext context,
   return screenHeight(context, dividedBy: dividedBy, reducedBy: kToolbarHeight);
 }
 
-BoxDecoration myBoxDecoration(Color colorletra) {
+BoxDecoration myBoxDecoration(Color colorParam) {
   return BoxDecoration(
-    border: Border.all(color: colorletra),
+    border: Border.all(color: colorParam),
   );
-}
-
- AppBar appbarUtil(String text){
-  return  AppBar(
-          backgroundColor: PrimaryColor,
-          title: Text('$text',
-              style: TextStyle(
-                  fontSize: 18,
-                  decorationStyle: TextDecorationStyle.wavy,
-                  fontStyle: FontStyle.normal,
-                  fontWeight: FontWeight.normal)),
-        );
 }
 
 

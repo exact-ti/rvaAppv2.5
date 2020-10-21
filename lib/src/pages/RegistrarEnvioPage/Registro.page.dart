@@ -12,6 +12,7 @@ import 'package:rvaapp/src/models/InputModel.dart';
 import 'package:rvaapp/src/pages/layout/app-bar/AppBar.page.dart';
 import 'package:rvaapp/src/services/notificationProvider.dart';
 import 'package:rvaapp/src/shared/modals/notification.dart';
+import 'package:rvaapp/src/styles/theme_data.dart';
 import 'Registro.controller.dart';
 
 class HomePage extends StatefulWidget {
@@ -99,7 +100,6 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    const SecondColor = const Color(0xFF6698AE);
 
     Widget crearItemAgencia(AgenciaModel usuario) {
       if (isSwitched) {
@@ -107,8 +107,8 @@ class _HomePageState extends State<HomePage> {
           return Container(
             height: screenHeightExcludingToolbar(context, dividedBy: 10),
             decoration: BoxDecoration(
-              border: Border.all(color: colorback),
-              color: colorback,
+              border: Border.all(color: StylesThemeData.BORDERCOLOR),
+              color: StylesThemeData.BORDERCOLOR,
             ),
             child: Center(
                 child: Row(
@@ -119,7 +119,7 @@ class _HomePageState extends State<HomePage> {
                       child: Text("Agencia:",
                           style: TextStyle(
                             fontSize: 15,
-                            color: colorletra2,
+                            color: StylesThemeData.SUCCESSCOLOR,
                             decorationStyle: TextDecorationStyle.wavy,
                             fontStyle: FontStyle.normal,
                           ))),
@@ -130,7 +130,7 @@ class _HomePageState extends State<HomePage> {
                       child: Text(usuario.nombre,
                           style: TextStyle(
                               fontSize: 15,
-                              color: colorletra2,
+                              color: StylesThemeData.SUCCESSCOLOR,
                               decorationStyle: TextDecorationStyle.wavy,
                               fontWeight: FontWeight.bold))),
                 ),
@@ -141,14 +141,14 @@ class _HomePageState extends State<HomePage> {
           return Container(
               height: screenHeightExcludingToolbar(context, dividedBy: 10),
               decoration: BoxDecoration(
-                border: Border.all(color: Color(0xFFBF8888)),
-                color: Color(0xFFBF8888),
+                border: Border.all(color: StylesThemeData.BORDER_ERRORCOLOR),
+                color: StylesThemeData.BORDER_ERRORCOLOR,
               ),
               child: Center(
                 child: Text("LA AGENCIA YA FUE VISITADA",
                     style: TextStyle(
                         fontSize: 15,
-                        color: Color(0xFF800001),
+                        color: StylesThemeData.LETTER_ERRORCOLOR,
                         decorationStyle: TextDecorationStyle.wavy,
                         fontWeight: FontWeight.bold)),
               ));
@@ -158,8 +158,8 @@ class _HomePageState extends State<HomePage> {
           return Container(
             height: screenHeightExcludingToolbar(context, dividedBy: 10),
             decoration: BoxDecoration(
-              border: Border.all(color: colorback),
-              color: colorback,
+              border: Border.all(color: StylesThemeData.BORDERCOLOR),
+              color: StylesThemeData.BORDERCOLOR,
             ),
             child: Center(
                 child: Row(
@@ -170,7 +170,7 @@ class _HomePageState extends State<HomePage> {
                       child: Text("Agencia:",
                           style: TextStyle(
                             fontSize: 15,
-                            color: colorletra2,
+                            color: StylesThemeData.LETTERCOLOR,
                             decorationStyle: TextDecorationStyle.wavy,
                             fontStyle: FontStyle.normal,
                           ))),
@@ -181,7 +181,7 @@ class _HomePageState extends State<HomePage> {
                       child: Text(usuario.nombre,
                           style: TextStyle(
                               fontSize: 15,
-                              color: colorletra2,
+                              color: StylesThemeData.LETTERCOLOR,
                               decorationStyle: TextDecorationStyle.wavy,
                               fontWeight: FontWeight.bold))),
                 ),
@@ -192,8 +192,8 @@ class _HomePageState extends State<HomePage> {
           return Container(
               height: screenHeightExcludingToolbar(context, dividedBy: 10),
               decoration: BoxDecoration(
-                border: Border.all(color: Color(0xFFBF8888)),
-                color: Color(0xFFBF8888),
+                border: Border.all(color: StylesThemeData.BORDER_ERRORCOLOR),
+                color: StylesThemeData.BORDER_ERRORCOLOR,
               ),
               child: Center(
                 child: Text(
@@ -203,7 +203,7 @@ class _HomePageState extends State<HomePage> {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                         fontSize: 15,
-                        color: Color(0xFF800001),
+                        color: StylesThemeData.LETTER_ERRORCOLOR,
                         decorationStyle: TextDecorationStyle.wavy,
                         fontWeight: FontWeight.bold)),
               ));
@@ -222,8 +222,8 @@ class _HomePageState extends State<HomePage> {
             });
             inicializarValores();
           },
-          activeTrackColor: SecondColor,
-          activeColor: PrimaryColor,
+          activeTrackColor: StylesThemeData.SWITCHCOLOR,
+          activeColor: StylesThemeData.PRIMARYCOLOR,
         ),
       );
     }
@@ -236,8 +236,8 @@ class _HomePageState extends State<HomePage> {
         child: Switch(
           value: switchParam,
           onChanged: (value) {},
-          activeTrackColor: SecondColor,
-          activeColor: PrimaryColor,
+          activeTrackColor: StylesThemeData.SWITCHCOLOR,
+          activeColor: StylesThemeData.PRIMARYCOLOR,
         ),
       );
     }
@@ -283,7 +283,7 @@ class _HomePageState extends State<HomePage> {
               child: Text("No existe la agencia",
                   style: TextStyle(
                     fontSize: 15,
-                    color: colorletra2,
+                    color: StylesThemeData.LETTERCOLOR,
                     decorationStyle: TextDecorationStyle.wavy,
                     fontStyle: FontStyle.normal,
                   ))),
@@ -467,7 +467,7 @@ class _HomePageState extends State<HomePage> {
                       contentPadding: new EdgeInsets.symmetric(
                           vertical: 5.0, horizontal: 10.0),
                       filled: true,
-                      fillColor: Color(0xFFEAEFF2),
+                      fillColor: StylesThemeData.INPUTCOLOR,
                       errorStyle: TextStyle(color: Colors.red, fontSize: 15.0),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10.0),
@@ -476,7 +476,7 @@ class _HomePageState extends State<HomePage> {
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10.0),
                         borderSide: BorderSide(
-                          color: Color(0xFFEAEFF2),
+                          color: StylesThemeData.INPUTCOLOR,
                           width: 0.0,
                         ),
                       ),
@@ -528,7 +528,7 @@ class _HomePageState extends State<HomePage> {
                           contentPadding: new EdgeInsets.symmetric(
                               vertical: 5.0, horizontal: 10.0),
                           filled: true,
-                          fillColor: Color(0xFFEAEFF2),
+                          fillColor: StylesThemeData.INPUTCOLOR,
                           errorStyle:
                               TextStyle(color: Colors.red, fontSize: 15.0),
                           focusedBorder: OutlineInputBorder(
@@ -538,7 +538,7 @@ class _HomePageState extends State<HomePage> {
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10.0),
                             borderSide: BorderSide(
-                              color: Color(0xFFEAEFF2),
+                              color: StylesThemeData.INPUTCOLOR,
                               width: 0.0,
                             ),
                           ),
@@ -619,11 +619,11 @@ class _HomePageState extends State<HomePage> {
                   },
                   color: isSwitched
                       ? agencias != null && estadoenvio != EstadosEnviosEnum.ENVIADO
-                          ? Color(0xFF2C6983)
-                          : colorletra
+                          ? StylesThemeData.PRIMARYCOLOR
+                          : StylesThemeData.DISABLECOLOR
                       : agencias != null && estadoentrega == EstadosEnviosEnum.ENVIADO
-                          ? Color(0xFF2C6983)
-                          : colorletra,
+                          ? StylesThemeData.PRIMARYCOLOR
+                          : StylesThemeData.DISABLECOLOR,
                   child:
                       Text('Registrar', style: TextStyle(color: Colors.white)),
                 ),

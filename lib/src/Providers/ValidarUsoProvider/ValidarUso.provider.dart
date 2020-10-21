@@ -11,7 +11,7 @@ class ValidarUsoProvider implements IValidarUsoProvider {
   
   @override
   Future<dynamic> validarUsoApp() async {
-    Map<String, Object> respuesta = {'valido': true, 'envio': true, 'recojo': false};
+    Map<String, Object> respuesta = {'valido': true, 'envio': true, 'recojo': true};
     return respuesta;
 /*     Response respuesta = await req.post(
         "/ConfiguracionWS.asmx/ValidarUsoApp", null, null);
