@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:barcode_scan/gen/protos/protos.pb.dart';
 import 'package:rvaapp/src/models/BuzonModel.dart';
 import 'package:rvaapp/src/models/ConfigurationModel.dart';
 import 'package:shared_preferences/shared_preferences.dart';

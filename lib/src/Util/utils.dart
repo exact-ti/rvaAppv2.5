@@ -111,8 +111,6 @@ void desenfocarInputfx(BuildContext context) {
   new TextEditingController().clear();
 }
 
-
-
 final _icons = <String, IconData>{
   'add_alert': Icons.add_alert,
   'accessibility': Icons.accessibility,
@@ -171,6 +169,12 @@ BuzonModel buzonPreferences(){
   Map<String, dynamic> buzon = json.decode(_prefs.buzon);
   if(buzon==null) return null;
   return buzonModel.fromPreferencs(buzon);
+}
+
+void enfocarInputfx(BuildContext context, FocusNode fx) {
+  FocusScope.of(context).unfocus();
+  new TextEditingController().clear();
+  FocusScope.of(context).requestFocus(fx);
 }
 
 

@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:rvaapp/src/services/notificationProvider.dart';
 import 'package:rvaapp/src/styles/theme_data.dart';
 import 'AppBar.controller.dart';
 import 'package:rvaapp/src/enum/EstadoApp.dart';
@@ -55,11 +53,8 @@ class _CustomAppBarState extends State<CustomAppBar>
 
   @override
   Widget build(BuildContext context) {
-/*     final bool cantidad = Provider.of<NotificationConfiguration>(context).validarenvio;
- */
-
     return AppBar(
-        backgroundColor: primaryColor,
+        backgroundColor: PRIMARYCOLOR,
         automaticallyImplyLeading:
             widget.leadingbool == null || widget.leadingbool == true
                 ? true

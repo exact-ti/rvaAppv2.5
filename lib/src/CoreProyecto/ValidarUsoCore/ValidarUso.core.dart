@@ -2,15 +2,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import 'package:rvaapp/src/Providers/ValidarUsoProvider/IValidarUso.provider.dart';
 import 'package:rvaapp/src/Util/utils.dart';
-import 'package:rvaapp/src/models/BuzonModel.dart';
-import 'package:rvaapp/src/models/ConfigurationModel.dart';
-import 'package:rvaapp/src/preferencias_usuario/preferencias_usuario.dart';
 import 'package:rvaapp/src/services/notificationProvider.dart';
 import 'package:rvaapp/src/shared/modals/notification.dart';
 import 'IValidarUso.core.dart';
 
 class ValidarUsoCore implements IValidarUsoCore {
-  final _prefs = new PreferenciasUsuario();
 
   IValidarUsoProvider validarusoProvider;
 

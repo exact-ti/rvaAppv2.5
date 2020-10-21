@@ -40,7 +40,7 @@ class Requester {
     return respuestaGet;
   }
 
-  Future<Response> post(String url, dynamic data, dynamic params) async {
+  Future<Response> post(String url, dynamic data, {Map<String, Object> params}) async {
     Response respuestaPost =await addInterceptors(_dio).post(properties['API'] + url,
             data: data,
             queryParameters: params,

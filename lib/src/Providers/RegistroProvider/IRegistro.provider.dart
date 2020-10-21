@@ -1,6 +1,7 @@
 import 'package:rvaapp/src/models/AgenciaModel.dart';
 
 abstract class IRegistroProvider {
+  
   Future<bool> registroCodigoRecojo(dynamic dataMap);
 
   Future<bool> registroCodigoEntrega(dynamic dataMap);

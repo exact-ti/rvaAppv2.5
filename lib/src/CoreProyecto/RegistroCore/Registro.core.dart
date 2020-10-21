@@ -1,7 +1,9 @@
+import 'dart:convert';
 import 'package:rvaapp/src/Providers/RegistroProvider/IRegistro.provider.dart';
 import 'package:rvaapp/src/Providers/RegistroProvider/Registro.provider.dart';
 import 'package:rvaapp/src/Util/utils.dart';
 import 'package:rvaapp/src/models/AgenciaModel.dart';
+import 'package:rvaapp/src/models/CampoModel.dart';
 import 'IRegistro.core.dart';
 
 class RegistroCore implements IRegistroCore {
@@ -13,11 +15,12 @@ class RegistroCore implements IRegistroCore {
 
   @override
   Future<bool> registrocodigoCore(
-      String codigo, bool modo, String codigoSobre) async {
+      bool modo, String codigoAgencia, List<CampoModel> listCampo) async {
+    dynamic listCampos = listCampo.map((campo) => {"iId": campo.id, "valor": campo.valor});
     Map<String, dynamic> dataMap = {
       'codigoUsuario': buzonId(),
-      'codigoAgencia': codigo,
-      'comprobante': codigoSobre
+      'codigoAgencia': codigoAgencia,
+      'campos': listCampos
     };
     if (modo) {
       return await registro.registroCodigoRecojo(dataMap);
