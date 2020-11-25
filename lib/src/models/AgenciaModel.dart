@@ -23,6 +23,16 @@ class AgenciaModel {
     return agencias;
   }
 
+  AgenciaModel agenciaModelVacio(){
+      AgenciaModel agencia = new AgenciaModel();
+      agencia.nombre = "No se han encontrado resultados";
+      agencia.id = "0";
+      agencia.idtipo = 0;
+      agencia.nombretipo = "";
+      agencia.estado = 0;
+      return agencia;
+  }
+
 
     List<AgenciaModel> fromProviderEntrega(List<dynamic> jsons) {
     List<AgenciaModel> agencias = List();

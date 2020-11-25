@@ -27,11 +27,11 @@ class RegistroController {
     return respuesta;
   }
 
-  Future<List<AgenciaModel>> listarAgencias(String codigo, bool modo) async {
+  Future<AgenciaModel> listarAgencias(String codigo, bool modo) async {
     return await registroCore.listarAgencias(codigo, modo);
   }
 
-  Future<List<InputModel>> listarInput() async {
-    return await inputCore.listarInputs();
+  Future<List<InputModel>> listarInput(bool modoRecojo) async {
+    return await inputCore.listarInputs(modoRecojo);
   }
 }

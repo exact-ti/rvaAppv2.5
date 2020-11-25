@@ -54,7 +54,7 @@ class _CustomAppBarState extends State<CustomAppBar>
   @override
   Widget build(BuildContext context) {
     return AppBar(
-        backgroundColor: StylesThemeData.PRIMARYCOLOR,
+        backgroundColor: StylesThemeData.PRIMARY_COLOR,
         automaticallyImplyLeading:
             widget.leadingbool == null || widget.leadingbool == true
                 ? true

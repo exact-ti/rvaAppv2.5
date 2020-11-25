@@ -1,3 +1,4 @@
 class TipoCargoEnum {
-  static const tipoProveedor = 2;
+  static const tipoCliente = 1;
+  static const tipoProveedor = 3;
 }

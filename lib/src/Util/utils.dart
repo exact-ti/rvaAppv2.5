@@ -1,9 +1,12 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:rvaapp/src/models/BuzonModel.dart';
+import 'package:rvaapp/src/pages/RegistrarEnvioPage/Registro.page.dart';
 import 'package:rvaapp/src/preferencias_usuario/preferencias_usuario.dart';
 import 'package:rvaapp/src/services/locator.dart';
 import 'package:rvaapp/src/services/navigation_service_file.dart';
+import 'package:rvaapp/src/services/notificationProvider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 final _prefs = new PreferenciasUsuario();
@@ -77,12 +80,14 @@ List<Widget> milistview(BuildContext context) {
         image: DecorationImage(
             image: AssetImage('assets/original.jpg'), fit: BoxFit.cover)),
   ));
-
+    bool enRecojo = Provider.of<NotificationConfiguration>(context).validarrecojo;
     list.add(ListTile(
         leading: Icon(Icons.check_circle_outline, color: Colors.blue),
         title: Text("Registro"),
         onTap: () {
-         Navigator.pushReplacementNamed(context, "/home");
+               Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (BuildContext context) => HomePage(enRecojo:  enRecojo?true:false,)),
+          (Route<dynamic> route) => false);
         }));
     list.add(cerrarsesion(context));
   }
@@ -102,7 +107,6 @@ void eliminarpreferences(BuildContext context) async {
   SharedPreferences sharedPreferences;
   sharedPreferences = await SharedPreferences.getInstance();
       sharedPreferences.clear();
-      sharedPreferences.commit();
      _navigationService.navigationTo("/login");
 }
 
@@ -165,6 +169,18 @@ void enfocarInputfx(BuildContext context, FocusNode fx) {
   new TextEditingController().clear();
   FocusScope.of(context).requestFocus(fx);
 }
+
+
+Widget scaffoldbodyLogin(Widget principal, BuildContext context) {
+  return SingleChildScrollView(
+      child: ConstrainedBox(
+          constraints:
+              BoxConstraints(maxHeight: MediaQuery.of(context).size.height),
+          child: principal));
+}
+
+
+
 
 
 
