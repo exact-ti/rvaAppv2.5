@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:rvaapp/src/Configuration/config.dart';
 import 'package:rvaapp/src/Util/utils.dart';
 import 'package:rvaapp/src/enum/EstadosEnvios.dart';
+import 'package:rvaapp/src/enum/TipoCampoEnum.dart';
 import 'package:rvaapp/src/icons/theme_data.dart';
 import 'package:rvaapp/src/models/AgenciaModel.dart';
 import 'package:rvaapp/src/models/CampoModel.dart';
@@ -51,8 +52,10 @@ class _HomePageState extends State<HomePage> {
     _listController = List.generate(listInputs.length,
         (i) => TextEditingController(text: listInputs[i].valorInicial));
     _fxs = List.generate(listInputs.length, (i) => FocusNode());
-    listCampo = List.generate(listInputs.length,
-        (i) => CampoModel(listInputs[i].id, listInputs[i].valorInicial));
+    listCampo = List.generate(
+        listInputs.length,
+        (i) => CampoModel(listInputs[i].id, listInputs[i].valorInicial,
+            listInputs[i].idTipoCampo));
     if (mounted) {
       setState(() {
         listInputs = listInputs;
@@ -69,8 +72,10 @@ class _HomePageState extends State<HomePage> {
     _listController = List.generate(listInputs.length,
         (i) => TextEditingController(text: listInputs[i].valorInicial));
     _fxs = List.generate(listInputs.length, (i) => FocusNode());
-    listCampo = List.generate(listInputs.length,
-        (i) => CampoModel(listInputs[i].id, listInputs[i].valorInicial));
+    listCampo = List.generate(
+        listInputs.length,
+        (i) => CampoModel(listInputs[i].id, listInputs[i].valorInicial,
+            listInputs[i].idTipoCampo));
     setState(() {
       _listController = _listController;
       listCampo = listCampo;
@@ -103,16 +108,20 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  Future<bool> validarInputs(String valorInput) async {
-    if (valorInput.length < properties['CARACTERES_MINIMOS']) {
-      bool respuesta = await notification(context, "error", "EXACT",
-          "Complete al menos $valorminimo caracteres");
-      if (respuesta) return false;
-    }
-    if (valorInput.length > properties['CARACTERES_MAXIMOS']) {
-      bool respuesta = await notification(context, "error", "EXACT",
-          "El código sobrepasa los caracteres máximos");
-      if (respuesta) return false;
+  Future<bool> validarInputs(String valorInput, int tipoCampoId) async {
+    if (tipoCampoId == TipoCampoEnum.TYPENUMERO) {
+      return true;
+    } else {
+      if (valorInput.length < properties['CARACTERES_MINIMOS']) {
+        bool respuesta = await notification(context, "error", "EXACT",
+            "Complete al menos $valorminimo caracteres");
+        if (respuesta) return false;
+      }
+      if (valorInput.length > properties['CARACTERES_MAXIMOS']) {
+        bool respuesta = await notification(context, "error", "EXACT",
+            "El código sobrepasa los caracteres máximos");
+        if (respuesta) return false;
+      }
     }
     return true;
   }
@@ -142,12 +151,16 @@ class _HomePageState extends State<HomePage> {
 
   verificarenvio() async {
     List<CampoModel> listaInputErrores = listCampo.where((element) {
-      if (element.valor.length < properties['CARACTERES_MINIMOS'] &&
-          element.valor.length > 0) {
-        return true;
-      }
-      if (element.valor.length > properties['CARACTERES_MAXIMOS']) {
-        return true;
+      if (element.tipoCampoId == TipoCampoEnum.TYPENUMERO) {
+        return false;
+      } else {
+        if (element.valor.length < properties['CARACTERES_MINIMOS'] &&
+            element.valor.length > 0) {
+          return true;
+        }
+        if (element.valor.length > properties['CARACTERES_MAXIMOS']) {
+          return true;
+        }
       }
       return false;
     }).toList();
@@ -278,7 +291,7 @@ class _HomePageState extends State<HomePage> {
                           ))),
                 ),
                 Container(
-                  margin: const EdgeInsets.only(left: 20),
+                  margin: const EdgeInsets.only(left: 10),
                   child: Center(
                       child: Text(agencia.nombre,
                           style: TextStyle(
@@ -510,8 +523,9 @@ class _HomePageState extends State<HomePage> {
                 idTipoCampo: listInputs[i].idTipoCampo,
                 iconSufix: IconsData.ICON_CAMERA,
                 methodOnPressed: (value) async {
-                  if (await validarInputs(value)) {
+                  if (await validarInputs(value, listInputs[i].idTipoCampo)) {
                     this.listCampo[i].valor = value;
+                    this.listCampo[i].tipoCampoId = listInputs[i].idTipoCampo;
                     if (listInputs[i].id != latestElement.id) {
                       enfocarInputfx(context, _fxs[i + 1]);
                     }
@@ -522,13 +536,16 @@ class _HomePageState extends State<HomePage> {
                 },
                 methodOnChange: (value) {
                   this.listCampo[i].valor = value;
+                  this.listCampo[i].tipoCampoId = listInputs[i].idTipoCampo;
                 },
                 methodOnPressedSufix: () async {
                   desenfocarInputfx(context);
                   var result = await BarcodeScanner.scan();
-                  if (await validarInputs(result.rawContent)) {
+                  if (await validarInputs(
+                      result.rawContent, listInputs[i].idTipoCampo)) {
                     setState(() {
                       this.listCampo[i].valor = result.rawContent;
+                      this.listCampo[i].tipoCampoId = listInputs[i].idTipoCampo;
                       this._listController[i].text = result.rawContent;
                     });
                     if (listInputs[i].id != latestElement.id) {
@@ -537,6 +554,7 @@ class _HomePageState extends State<HomePage> {
                   } else {
                     setState(() {
                       this.listCampo[i].valor = result.rawContent;
+                      this.listCampo[i].tipoCampoId = listInputs[i].idTipoCampo;
                       this._listController[i].text = result.rawContent;
                     });
                     enfocarInputfx(context, _fxs[i]);
