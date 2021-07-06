@@ -32,7 +32,9 @@ dependencies:
   font_awesome_flutter: ^8.8.1
   provider: ^4.3.2+2
   get_it:
-  
+  progress_indicators: ^0.1.5
+  flutter_spinkit: "^4.1.2"
+  simple_animations: ^2.2.2
 
 dev_dependencies:
   flutter_test:
@@ -51,12 +53,14 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/usuariologin.png
     - assets/menu_opts.json
     - assets/original.jpg
     - assets/chequeras.xlsx
     - assets/verbales.xlsx
     - assets/campañas.xlsx
+    - assets/images/logo-header.PNG
+    - assets/images/header.png
+
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import 'package:rvaapp/src/Providers/LoginProvider/ILogin.provider.dart';
 import 'package:rvaapp/src/Providers/ValidarUsoProvider/IValidarUso.provider.dart';
+import 'package:rvaapp/src/models/BuzonModel.dart';
 import 'package:rvaapp/src/preferencias_usuario/preferencias_usuario.dart';
 import 'package:rvaapp/src/services/notificationProvider.dart';
 import 'ILogin.core.dart';
@@ -25,7 +26,9 @@ class LoginCore implements ILoginCore {
     Provider.of<NotificationConfiguration>(context, listen: false).validarenvio=configuration["envio"];
     Provider.of<NotificationConfiguration>(context, listen: false).validarrecojo=configuration["recojo"];
     if(!configuration["valido"]) return false;
-    _prefs.buzon = await loginProvider.login(username, password);
+    BuzonModel buzonModel = await loginProvider.login(username, password);
+     _prefs.buzon = buzonModel;
+    if(buzonModel!=null) _prefs.nombreUsuario = buzonModel.nombre;
     return true;
   }
 }

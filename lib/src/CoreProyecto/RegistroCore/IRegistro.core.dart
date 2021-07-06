@@ -5,6 +5,6 @@ abstract class IRegistroCore {
 
     Future<bool> registrocodigoCore(bool modo, String codigoAgencia, List<CampoModel> listCampo);
 
-    Future<List<AgenciaModel>> listarAgencias(String codigo, bool modo);
+    Future<AgenciaModel> listarAgencias(String codigo, bool modo);
 
 }

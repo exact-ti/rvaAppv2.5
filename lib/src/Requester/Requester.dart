@@ -40,12 +40,16 @@ class Requester {
     return respuestaGet;
   }
 
-  Future<Response> post(String url, dynamic data, {Map<String, Object> params}) async {
-    Response respuestaPost =await addInterceptors(_dio).post(properties['API'] + url,
+  Future<Response> post(String url, dynamic data,
+      {Map<String, Object> params}) async {
+    Response response =
+        await addInterceptors(_dio).post(properties['API'] + url,
             data: data,
             queryParameters: params,
-            options: Options(contentType:Headers.formUrlEncodedContentType));
-    return respuestaPost;
+            options: Options(
+              contentType: Headers.formUrlEncodedContentType,
+            ));
+    return response;
   }
 
   dynamic requestInterceptor(RequestOptions options) async {

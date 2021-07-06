@@ -1,37 +1,44 @@
 import 'package:barcode_scan/barcode_scan.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:rvaapp/src/Configuration/config.dart';
 import 'package:rvaapp/src/Util/utils.dart';
 import 'package:rvaapp/src/enum/EstadosEnvios.dart';
 import 'package:rvaapp/src/enum/TipoCampoEnum.dart';
+import 'package:rvaapp/src/icons/theme_data.dart';
 import 'package:rvaapp/src/models/AgenciaModel.dart';
 import 'package:rvaapp/src/models/CampoModel.dart';
 import 'package:rvaapp/src/models/InputModel.dart';
 import 'package:rvaapp/src/pages/layout/app-bar/AppBar.page.dart';
+import 'package:rvaapp/src/pages/layout/menu-bar/DrawerPage.dart';
 import 'package:rvaapp/src/services/notificationProvider.dart';
 import 'package:rvaapp/src/shared/modals/notification.dart';
+import 'package:rvaapp/src/shared/widgets/ButtonWidget.dart';
+import 'package:rvaapp/src/shared/widgets/InputWidget.dart';
+import 'package:rvaapp/src/shared/widgets/LoadingWidget.dart';
+import 'package:rvaapp/src/styles/theme_data.dart';
 import 'Registro.controller.dart';
 
 class HomePage extends StatefulWidget {
+  final bool enRecojo;
+
+  const HomePage({Key key, this.enRecojo}) : super(key: key);
+
   @override
   _HomePageState createState() => new _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  final _bandejaController = TextEditingController();
-  List<TextEditingController> _listController = [];
-  RegistroController principalcontroller = new RegistroController();
-  List<InputModel> listInput = new List();
-  List<CampoModel> listCampo = new List();
-  String codigobandeja = "";
-  List<AgenciaModel> agencias;
-  int estadoenvio = 0;
-  int estadoentrega = 0;
-  bool isSwitched = true;
-  FocusNode f1 = new FocusNode();
-  List<FocusNode> _fxs = [];
+  final _codigoController = TextEditingController();
+  String valueCodigoController = "";
+  List<TextEditingController> _listController;
+  List<FocusNode> _fxs;
+  RegistroController registroController = new RegistroController();
+  FocusNode focusCodigo = new FocusNode();
+  List<InputModel> listInputs;
+  List<CampoModel> listCampo;
+  AgenciaModel agenciaModel;
+  bool enRecojo = true;
   int valorminimo, valormaximo;
 
   @override
@@ -41,54 +48,137 @@ class _HomePageState extends State<HomePage> {
   }
 
   inicializarState() async {
-    listInput = await principalcontroller.listarInput();
+    listInputs = await registroController.listarInput(widget.enRecojo);
+    _listController = List.generate(listInputs.length,
+        (i) => TextEditingController(text: listInputs[i].valorInicial));
+    _fxs = List.generate(listInputs.length, (i) => FocusNode());
+    listCampo = List.generate(
+        listInputs.length,
+        (i) => CampoModel(listInputs[i].id, listInputs[i].valorInicial,
+            listInputs[i].idTipoCampo));
     if (mounted) {
-      _listController = List.generate(listInput.length,
-          (i) => TextEditingController(text: listInput[i].valorInicial));
-      _fxs = List.generate(listInput.length, (i) => FocusNode());
-      listCampo = List.generate(listInput.length, (i) => CampoModel(listInput[i].id,listInput[i].valorInicial));
       setState(() {
-        listInput = listInput;
-        _listController=_listController;
-        listCampo=listCampo;
+        listInputs = listInputs;
+        _listController = _listController;
+        listCampo = listCampo;
       });
       valorminimo = properties['CARACTERES_MINIMOS'];
       valormaximo = properties['CARACTERES_MAXIMOS'];
     }
   }
 
-  inicializarValores() {
+  listarInput(bool modoRecojo) async {
+    listInputs = await registroController.listarInput(modoRecojo);
+    _listController = List.generate(listInputs.length,
+        (i) => TextEditingController(text: listInputs[i].valorInicial));
+    _fxs = List.generate(listInputs.length, (i) => FocusNode());
+    listCampo = List.generate(
+        listInputs.length,
+        (i) => CampoModel(listInputs[i].id, listInputs[i].valorInicial,
+            listInputs[i].idTipoCampo));
     setState(() {
-      _bandejaController.text = "";
-      _listController.clear();
-      codigobandeja = "";
-      agencias = null;
-      estadoenvio = 0;
+      _listController = _listController;
+      listCampo = listCampo;
+      listInputs = listInputs;
     });
-    inicializarState(); 
+  }
+
+  void inicializarValores() async {
+    setState(() {
+      valueCodigoController = "";
+      _codigoController.clear();
+      _listController = null;
+      listInputs = null;
+      listCampo = null;
+      this.agenciaModel = null;
+    });
+  }
+
+  void onPressedButton() {
+    if (enRecojo) {
+      if (agenciaModel != null &&
+          this.agenciaModel.estado != EstadosEnviosEnum.VISITADA) {
+        verificarenvio();
+      }
+    } else {
+      if (agenciaModel != null &&
+          this.agenciaModel.estado == EstadosEnviosEnum.ENVIADO) {
+        verificarenvio();
+      }
+    }
+  }
+
+  Future<bool> validarInputs(String valorInput, int tipoCampoId) async {
+    if (tipoCampoId == TipoCampoEnum.TYPENUMERO) {
+      return true;
+    } else {
+      if (valorInput.length < properties['CARACTERES_MINIMOS']) {
+        bool respuesta = await notification(context, "error", "EXACT",
+            "Complete al menos $valorminimo caracteres");
+        if (respuesta) return false;
+      }
+      if (valorInput.length > properties['CARACTERES_MAXIMOS']) {
+        bool respuesta = await notification(context, "error", "EXACT",
+            "El código sobrepasa los caracteres máximos");
+        if (respuesta) return false;
+      }
+    }
+    return true;
+  }
+
+  void validarLista() async {
+    setState(() {
+      this.agenciaModel = null;
+      this.valueCodigoController = _codigoController.text;
+    });
+    if (_codigoController.text.length >= properties['CARACTERES_MINIMOS']) {
+      this.agenciaModel = await registroController.listarAgencias(
+          _codigoController.text, enRecojo);
+      setState(() {
+        this.agenciaModel = this.agenciaModel;
+        this.valueCodigoController = this._codigoController.text;
+      });
+    } else {
+      setState(() {
+        this.valueCodigoController = this._codigoController.text;
+      });
+    }
+  }
+
+  void onchangeCodigo(valueCodigo) {
+    validarLista();
   }
 
   verificarenvio() async {
     List<CampoModel> listaInputErrores = listCampo.where((element) {
-      if (element.valor.length < properties['CARACTERES_MINIMOS'] &&
-          element.valor.length > 0) {
-        return true;
-      }
-      if (element.valor.length > properties['CARACTERES_MAXIMOS']) {
-        return true;
+      if (element.tipoCampoId == TipoCampoEnum.TYPENUMERO) {
+        return false;
+      } else {
+        if (element.valor.length < properties['CARACTERES_MINIMOS'] &&
+            element.valor.length > 0) {
+          return true;
+        }
+        if (element.valor.length > properties['CARACTERES_MAXIMOS']) {
+          return true;
+        }
       }
       return false;
     }).toList();
 
     if (listaInputErrores.isEmpty) {
       desenfocarInputfx(context);
-      bool respuestaRegistro = await principalcontroller.recogerdocumento(
-          context, _bandejaController.text, isSwitched, listCampo);
+      bool respuestaRegistro = await registroController.recogerdocumento(
+          context, _codigoController.text, enRecojo, listCampo);
       if (respuestaRegistro) {
-        inicializarValores(); 
+        inicializarValores();
+        listarInput(enRecojo);
       }
     } else if (listaInputErrores.length == 1) {
-      String tituloError = listInput.where((element) => element.id==listaInputErrores[0].id).map((e) => e.titulo).toList().first;
+      String tituloError = listInputs
+          .where((element) => element.id == listaInputErrores[0].id)
+          .map((e) => e.titulo)
+          .toList()
+          .first;
       notification(context, "error", "EXACT",
           "El campo $tituloError no cumple con el formato requerido");
     } else {
@@ -97,21 +187,97 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  void onPressCodigo(dynamic valueCodigo) {
+    setState(() {
+      valueCodigoController = valueCodigo;
+    });
+    if (enRecojo) {
+      if (this.agenciaModel != null &&
+          this.agenciaModel.estado == EstadosEnviosEnum.PENDIENTE) {
+        verificarenvio();
+      } else {
+        FocusScope.of(context).requestFocus(focusCodigo);
+        if (_codigoController.text.length < valorminimo) {
+          notification(context, "Error", "EXACT",
+              'Llene al menos $valorminimo caracteres');
+        }
+
+        if (this.agenciaModel.estado == EstadosEnviosEnum.VACIO &&
+            _codigoController.text.length >= valorminimo) {
+          notification(context, "Error", "EXACT", 'No hay valijas pendientes');
+        }
+        if (this.agenciaModel.estado == EstadosEnviosEnum.VISITADA) {
+          notification(context, "Error", "EXACT", 'La agencia ya fue visitada');
+        }
+      }
+    } else {
+      if (this.agenciaModel != null &&
+          this.agenciaModel.estado == EstadosEnviosEnum.ENVIADO) {
+        verificarenvio();
+      } else {
+        if (_codigoController.text.length < valorminimo) {
+          notification(context, "Error", "EXACT",
+              'Llene al menos $valorminimo caracteres');
+        }
+        if (_codigoController.text.length > valormaximo) {
+          notification(context, "Error", "EXACT",
+              'No sobrepase los $valormaximo caracteres');
+        }
+
+        if (this.agenciaModel.estado == EstadosEnviosEnum.VACIO) {
+          notification(context, "Error", "EXACT", 'No existe la agencia');
+        }
+        if (this.agenciaModel.estado == EstadosEnviosEnum.ENVIADO) {
+          notification(context, "Error", "EXACT", 'No hay valijas pendientes');
+        }
+        if (this.agenciaModel.estado == EstadosEnviosEnum.ENTREGADO) {
+          notification(
+              context, "Error", "EXACT", 'Las valijas ya fueron entregadas');
+        }
+        focusCodigo.unfocus();
+        FocusScope.of(context).requestFocus(focusCodigo);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    const SecondColor = const Color(0xFF6698AE);
-
-    Widget crearItemAgencia(AgenciaModel usuario) {
-      if (isSwitched) {
-        if (usuario.estado == 1) {
+    Widget crearItemAgencia(AgenciaModel agencia) {
+      if (agencia.estado == 0) {
+        return Container(
+          height: 80,
+          decoration: BoxDecoration(
+            border: Border.all(color: StylesThemeData.SECOND_COLOR),
+            color: StylesThemeData.SECOND_COLOR,
+          ),
+          child: Center(
+              child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Container(
+                child: Center(
+                    child: Text(agencia.nombre,
+                        style: TextStyle(
+                            fontSize: 15,
+                            color: Colors.black,
+                            decorationStyle: TextDecorationStyle.wavy,
+                            fontWeight: FontWeight.bold))),
+              ),
+            ],
+          )),
+        );
+      }
+      if (enRecojo) {
+        if (agencia.estado == 1) {
           return Container(
-            height: screenHeightExcludingToolbar(context, dividedBy: 10),
+            height: 80,
             decoration: BoxDecoration(
-              border: Border.all(color: colorback),
-              color: colorback,
+              border: Border.all(color: StylesThemeData.BORDER_COLOR),
+              color: StylesThemeData.BORDER_COLOR,
             ),
             child: Center(
                 child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 Container(
                   margin: const EdgeInsets.only(left: 20),
@@ -119,18 +285,18 @@ class _HomePageState extends State<HomePage> {
                       child: Text("Agencia:",
                           style: TextStyle(
                             fontSize: 15,
-                            color: colorletra2,
+                            color: StylesThemeData.SUCCESS_COLOR,
                             decorationStyle: TextDecorationStyle.wavy,
                             fontStyle: FontStyle.normal,
                           ))),
                 ),
                 Container(
-                  margin: const EdgeInsets.only(left: 20),
+                  margin: const EdgeInsets.only(left: 10),
                   child: Center(
-                      child: Text(usuario.nombre,
+                      child: Text(agencia.nombre,
                           style: TextStyle(
                               fontSize: 15,
-                              color: colorletra2,
+                              color: StylesThemeData.SUCCESS_COLOR,
                               decorationStyle: TextDecorationStyle.wavy,
                               fontWeight: FontWeight.bold))),
                 ),
@@ -139,30 +305,31 @@ class _HomePageState extends State<HomePage> {
           );
         } else {
           return Container(
-              height: screenHeightExcludingToolbar(context, dividedBy: 10),
+              height: 80,
               decoration: BoxDecoration(
-                border: Border.all(color: Color(0xFFBF8888)),
-                color: Color(0xFFBF8888),
+                border: Border.all(color: StylesThemeData.BORDER_ERROR_COLOR),
+                color: StylesThemeData.BORDER_ERROR_COLOR,
               ),
               child: Center(
                 child: Text("LA AGENCIA YA FUE VISITADA",
                     style: TextStyle(
                         fontSize: 15,
-                        color: Color(0xFF800001),
+                        color: StylesThemeData.LETTER_ERROR_COLOR,
                         decorationStyle: TextDecorationStyle.wavy,
                         fontWeight: FontWeight.bold)),
               ));
         }
       } else {
-        if (usuario.estado == 6) {
+        if (agencia.estado == 6) {
           return Container(
-            height: screenHeightExcludingToolbar(context, dividedBy: 10),
+            height: 80,
             decoration: BoxDecoration(
-              border: Border.all(color: colorback),
-              color: colorback,
+              border: Border.all(color: StylesThemeData.BORDER_COLOR),
+              color: StylesThemeData.BORDER_COLOR,
             ),
             child: Center(
                 child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 Container(
                   margin: const EdgeInsets.only(left: 20),
@@ -170,7 +337,7 @@ class _HomePageState extends State<HomePage> {
                       child: Text("Agencia:",
                           style: TextStyle(
                             fontSize: 15,
-                            color: colorletra2,
+                            color: StylesThemeData.LETTER_COLOR,
                             decorationStyle: TextDecorationStyle.wavy,
                             fontStyle: FontStyle.normal,
                           ))),
@@ -178,10 +345,10 @@ class _HomePageState extends State<HomePage> {
                 Container(
                   margin: const EdgeInsets.only(left: 20),
                   child: Center(
-                      child: Text(usuario.nombre,
+                      child: Text(agencia.nombre,
                           style: TextStyle(
                               fontSize: 15,
-                              color: colorletra2,
+                              color: StylesThemeData.LETTER_COLOR,
                               decorationStyle: TextDecorationStyle.wavy,
                               fontWeight: FontWeight.bold))),
                 ),
@@ -190,20 +357,20 @@ class _HomePageState extends State<HomePage> {
           );
         } else {
           return Container(
-              height: screenHeightExcludingToolbar(context, dividedBy: 10),
+              height: 80,
               decoration: BoxDecoration(
-                border: Border.all(color: Color(0xFFBF8888)),
-                color: Color(0xFFBF8888),
+                border: Border.all(color: StylesThemeData.BORDER_ERROR_COLOR),
+                color: StylesThemeData.BORDER_ERROR_COLOR,
               ),
               child: Center(
                 child: Text(
-                    usuario.estado == 1
+                    agencia.estado == 1
                         ? "Las valijas de esta agencia aún no fueron registradas por UTD"
                         : "Las valijas ya fueron entregadas a esta agencia",
                     textAlign: TextAlign.center,
                     style: TextStyle(
                         fontSize: 15,
-                        color: Color(0xFF800001),
+                        color: StylesThemeData.LETTER_ERROR_COLOR,
                         decorationStyle: TextDecorationStyle.wavy,
                         fontWeight: FontWeight.bold)),
               ));
@@ -218,26 +385,29 @@ class _HomePageState extends State<HomePage> {
           onChanged: (value) {
             desenfocarInputfx(context);
             setState(() {
-              isSwitched = value;
+              enRecojo = value;
             });
             inicializarValores();
+            listarInput(enRecojo);
           },
-          activeTrackColor: SecondColor,
-          activeColor: PrimaryColor,
+          activeTrackColor: StylesThemeData.SWITCH_COLOR_SECONDARY_BODY,
+          activeColor: StylesThemeData.PRIMARY_COLOR,
+          inactiveThumbColor: StylesThemeData.PRIMARY_COLOR,
+          inactiveTrackColor: StylesThemeData.SWITCH_COLOR_SECONDARY_BODY,
         ),
       );
     }
 
     Widget switchOne(bool switchParam) {
       setState(() {
-        isSwitched = switchParam;
+        enRecojo = switchParam;
       });
       return Center(
         child: Switch(
           value: switchParam,
           onChanged: (value) {},
-          activeTrackColor: SecondColor,
-          activeColor: PrimaryColor,
+          activeTrackColor: StylesThemeData.SWITCH_COLOR_SECONDARY_BODY,
+          activeColor: StylesThemeData.PRIMARY_COLOR,
         ),
       );
     }
@@ -246,7 +416,7 @@ class _HomePageState extends State<HomePage> {
       if (Provider.of<NotificationConfiguration>(context).validarenvio &&
           Provider.of<NotificationConfiguration>(context).validarrecojo) {
         return Container(
-          child: isSwitched != true ? Text("En entrega") : Text("En recojo"),
+          child: enRecojo != true ? Text("En entrega") : Text("En recojo"),
         );
       } else {
         if (Provider.of<NotificationConfiguration>(context).validarrecojo) {
@@ -264,7 +434,7 @@ class _HomePageState extends State<HomePage> {
     Widget validartypeSwitch() {
       if (Provider.of<NotificationConfiguration>(context).validarenvio &&
           Provider.of<NotificationConfiguration>(context).validarrecojo) {
-        return switchDoble(isSwitched);
+        return switchDoble(enRecojo);
       } else {
         if (Provider.of<NotificationConfiguration>(context).validarrecojo) {
           return switchOne(true);
@@ -274,94 +444,35 @@ class _HomePageState extends State<HomePage> {
       }
     }
 
-    Widget mostrarmensaje() {
-      return Container(
-        height: screenHeightExcludingToolbar(context, dividedBy: 10),
-        child: Center(
-            child: Container(
-          child: Center(
-              child: Text("No existe la agencia",
-                  style: TextStyle(
-                    fontSize: 15,
-                    color: colorletra2,
-                    decorationStyle: TextDecorationStyle.wavy,
-                    fontStyle: FontStyle.normal,
-                  ))),
-        )),
-      );
-    }
-
-    void validarLista() async {
-      if (_bandejaController.text.length >= properties['CARACTERES_MINIMOS']) {
-        agencias =
-            await principalcontroller.listarAgencias(codigobandeja, isSwitched);
-        if (agencias != null) {
-          for (AgenciaModel agencia in agencias) {
-            if (isSwitched) {
-              setState(() {
-                codigobandeja = codigobandeja;
-                estadoenvio = agencia.estado;
-              });
-            } else {
-              setState(() {
-                codigobandeja = codigobandeja;
-                estadoentrega = agencia.estado;
-              });
-            }
-          }
-        } else {
-          setState(() {
-            estadoentrega = 0;
-            estadoenvio = 0;
-            agencias = null;
-            codigobandeja = codigobandeja;
-          });
-        }
-      } else {
-        setState(() {
-          agencias = null;
-          codigobandeja = codigobandeja;
-        });
-      }
-    }
-
-    Future<bool> validarInputs(String valorInput) async {
-      if (valorInput.length < properties['CARACTERES_MINIMOS']) {
-        bool respuesta = await notification(context, "error", "EXACT",
-            "Complete al menos $valorminimo caracteres");
-        if (respuesta) return false;
-      }
-      if (valorInput.length > properties['CARACTERES_MAXIMOS']) {
-        bool respuesta = await notification(context, "error", "EXACT",
-            "El código sobrepasa los caracteres máximos");
-        if (respuesta) return false;
-      }
-      return true;
-    }
-
     Future _scannerCodAgencia() async {
-        desenfocarInputfx(context);
-        var result = await BarcodeScanner.scan();
-        _bandejaController.text = result.rawContent;
-        codigobandeja = result.rawContent;
-        validarLista();
+      desenfocarInputfx(context);
+      var result = await BarcodeScanner.scan();
+      _codigoController.text = result.rawContent;
+      validarLista();
     }
 
-    Widget listarAgencia() {
+    Widget listarAgencia(AgenciaModel agencia, String codigoAgencia) {
+      if (codigoAgencia.length < properties['CARACTERES_MINIMOS']) {
+        return Container(
+          margin: EdgeInsets.only(top: 20, bottom: 20),
+        );
+      }
+
+      if (agencia == null &&
+          codigoAgencia.length >= properties['CARACTERES_MINIMOS']) {
+        return Center(
+            child: Container(
+          margin: EdgeInsets.only(top: 20, bottom: 20),
+          child: LoadingWidget(),
+        ));
+      }
+
       return Container(
+          height: 80,
+          margin: EdgeInsets.only(top: 40, bottom: 40),
           alignment: Alignment.center,
           width: double.infinity,
-          margin: EdgeInsets.only(top: 40),
-          height: screenHeightExcludingToolbar(context, dividedBy: 10),
-          child: codigobandeja.length < properties['CARACTERES_MINIMOS']
-              ? Container()
-              : agencias != null
-                  ? ListView.builder(
-                    physics: const NeverScrollableScrollPhysics(),
-                      itemCount: agencias.length,
-                      itemBuilder: (context, i) =>
-                          crearItemAgencia(agencias[i]))
-                  : mostrarmensaje());
+          child: crearItemAgencia(agencia));
     }
 
     Widget switchWidget() {
@@ -385,202 +496,72 @@ class _HomePageState extends State<HomePage> {
           ));
     }
 
-    Widget codAgenciaWidget() {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          Container(
-              margin: const EdgeInsets.only(top: 20, bottom: 10),
-              alignment: Alignment.bottomLeft,
-              width: double.infinity,
-              child: Text("Código")),
-          Container(
-              margin: const EdgeInsets.only(bottom: 10),
-              alignment: Alignment.centerLeft,
-              width: double.infinity,
-              child: Row(children: <Widget>[
-                Expanded(
-                  child: TextFormField(
-                    focusNode: f1,
-                    keyboardType: TextInputType.text,
-                    controller: _bandejaController,
-                    textInputAction: TextInputAction.done,
-                    onFieldSubmitted: (value) {
-                      setState(() {
-                        codigobandeja = value;
-                      });
-                      if (isSwitched) {
-                        if (agencias != null && estadoenvio == 1) {
-                          enfocarInputfx(context, _fxs[1]);
-                        } else {
-                          FocusScope.of(context).requestFocus(f1);
-                          if (codigobandeja.length < valorminimo) {
-                            notification(context, "Error", "EXACT",
-                                'Llene al menos $valorminimo caracteres');
-                          }
-
-                          if (estadoenvio == 0 &&
-                              codigobandeja.length >= valorminimo) {
-                            notification(
-                                context, "Error", "EXACT", 'No hay va');
-                          }
-                          if (estadoenvio == 2) {
-                            notification(context, "Error", "EXACT",
-                                'La agencia ya fue visitada');
-                          }
-                        }
-                      } else {
-                        if (agencias != null && estadoentrega == 6) {
-                          enfocarInputfx(context, _fxs[1]);
-                        } else {
-                          if (codigobandeja.length < valorminimo) {
-                            notification(context, "Error", "EXACT",
-                                'Llene al menos $valorminimo caracteres');
-                          }
-                          if (codigobandeja.length > valormaximo) {
-                            notification(context, "Error", "EXACT",
-                                'No sobrepase los $valormaximo caracteres');
-                          }
-
-                          if (estadoentrega == 0) {
-                            notification(context, "Error", "EXACT",
-                                'No existe la agencia');
-                          }
-                          if (estadoentrega == 1) {
-                            notification(context, "Error", "EXACT",
-                                'No hay valijas pendientes');
-                          }
-                          if (estadoentrega == 7) {
-                            notification(context, "Error", "EXACT",
-                                'Las valijas ya fueron entregadas');
-                          }
-                          f1.unfocus();
-                          FocusScope.of(context).requestFocus(f1);
-                        }
-                      }
-                    },
-                    onChanged: (text) {
-                      codigobandeja = text;
-                      validarLista();
-                    },
-                    decoration: InputDecoration(
-                      contentPadding: new EdgeInsets.symmetric(
-                          vertical: 5.0, horizontal: 10.0),
-                      filled: true,
-                      fillColor: Color(0xFFEAEFF2),
-                      errorStyle: TextStyle(color: Colors.red, fontSize: 15.0),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10.0),
-                        borderSide: BorderSide(color: Colors.blue),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10.0),
-                        borderSide: BorderSide(
-                          color: Color(0xFFEAEFF2),
-                          width: 0.0,
-                        ),
-                      ),
-                    ),
-                  ),
-                  flex: 5,
-                ),
-                Expanded(
-                  child: Container(
-                    margin: const EdgeInsets.only(left: 15),
-                    child: new IconButton(
-                        icon: Icon(Icons.camera_alt),
-                        tooltip: "Increment",
-                        onPressed: _scannerCodAgencia),
-                  ),
-                ),
-              ]))
-        ],
-      );
-    }
-
     Widget listarInputs(List<InputModel> listInputs) {
+      if (listInputs == null ||
+          this.listCampo == null ||
+          (listInputs != null && this._listController.isEmpty))
+        return Center(
+            child: Container(
+          margin: EdgeInsets.only(top: 20, bottom: 20),
+          child: LoadingWidget(),
+        ));
+      if (listInputs.isEmpty ||
+          this.listCampo.isEmpty ||
+          this._listController.isEmpty) return Container();
       List<Widget> listwidget = new List();
-      if (listInputs.isEmpty) return Container();
       InputModel latestElement = listInputs[listInputs.length - 1];
       for (int i = 0; i < listInputs.length; i++) {
         listwidget.add(Column(
           children: <Widget>[
             Container(
-                margin: EdgeInsets.only(top: 20, bottom: 10),
-                alignment: Alignment.bottomLeft,
-                width: double.infinity,
-                child: Text(listInputs[i].titulo)),
-            Container(
-                margin: EdgeInsets.only(bottom: 10),
-                alignment: Alignment.centerLeft,
-                width: double.infinity,
-                child: Row(children: <Widget>[
-                  Expanded(
-                    child: TextFormField(
-                        focusNode: _fxs[i],
-                        keyboardType: listInputs[i].idTipoCampo ==
-                                TipoCampoEnum.TYPENUMERO
-                            ? TextInputType.number
-                            : TextInputType.text,
-                        controller: _listController[i],
-                        textInputAction: TextInputAction.done,
-                        decoration: InputDecoration(
-                          contentPadding: new EdgeInsets.symmetric(
-                              vertical: 5.0, horizontal: 10.0),
-                          filled: true,
-                          fillColor: Color(0xFFEAEFF2),
-                          errorStyle:
-                              TextStyle(color: Colors.red, fontSize: 15.0),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10.0),
-                            borderSide: BorderSide(color: Colors.blue),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10.0),
-                            borderSide: BorderSide(
-                              color: Color(0xFFEAEFF2),
-                              width: 0.0,
-                            ),
-                          ),
-                        ),
-                        onFieldSubmitted: (value) async {
-                          if (await validarInputs(value)) {
-                            listCampo[i].valor = value;
-                            if (listInputs[i].id != latestElement.id) {
-                              enfocarInputfx(context, _fxs[i + 1]);
-                            }
-                          } else {
-                            listCampo[i].valor = "";
-                            enfocarInputfx(context, _fxs[i]);
-                          }
-                        },
-                        onChanged: (text) {
-                          listCampo[i].valor = text;
-                        }),
-                    flex: 5,
-                  ),
-                  Expanded(
-                    child: Container(
-                      margin: const EdgeInsets.only(left: 15),
-                      child: new IconButton(
-                          icon: Icon(Icons.camera_alt),
-                          tooltip: "Increment",
-                          onPressed: () async {
-                            desenfocarInputfx(context);
-                            var result = await BarcodeScanner.scan();
-                            if (await validarInputs(result.rawContent)) {
-                              _listController[i].text = result.rawContent;
-                              if (listInputs[i].id != latestElement.id) {
-                                enfocarInputfx(context, _fxs[i + 1]);
-                              }
-                            } else {
-                              _listController[i].text = result.rawContent;
-                              enfocarInputfx(context, _fxs[i]);
-                            }
-                          }),
-                    ),
-                  ),
-                ])),
+              margin: EdgeInsets.only(
+                  bottom: listInputs[i].id != latestElement.id ? 20 : 0),
+              child: InputWidget(
+                controller: this._listController[i],
+                focusInput: _fxs[i],
+                hinttext: listInputs[i].titulo,
+                idTipoCampo: listInputs[i].idTipoCampo,
+                iconSufix: IconsData.ICON_CAMERA,
+                methodOnPressed: (value) async {
+                  if (await validarInputs(value, listInputs[i].idTipoCampo)) {
+                    this.listCampo[i].valor = value;
+                    this.listCampo[i].tipoCampoId = listInputs[i].idTipoCampo;
+                    if (listInputs[i].id != latestElement.id) {
+                      enfocarInputfx(context, _fxs[i + 1]);
+                    }
+                  } else {
+                    this.listCampo[i].valor = "";
+                    enfocarInputfx(context, _fxs[i]);
+                  }
+                },
+                methodOnChange: (value) {
+                  this.listCampo[i].valor = value;
+                  this.listCampo[i].tipoCampoId = listInputs[i].idTipoCampo;
+                },
+                methodOnPressedSufix: () async {
+                  desenfocarInputfx(context);
+                  var result = await BarcodeScanner.scan();
+                  if (await validarInputs(
+                      result.rawContent, listInputs[i].idTipoCampo)) {
+                    setState(() {
+                      this.listCampo[i].valor = result.rawContent;
+                      this.listCampo[i].tipoCampoId = listInputs[i].idTipoCampo;
+                      this._listController[i].text = result.rawContent;
+                    });
+                    if (listInputs[i].id != latestElement.id) {
+                      enfocarInputfx(context, _fxs[i + 1]);
+                    }
+                  } else {
+                    setState(() {
+                      this.listCampo[i].valor = result.rawContent;
+                      this.listCampo[i].tipoCampoId = listInputs[i].idTipoCampo;
+                      this._listController[i].text = result.rawContent;
+                    });
+                    enfocarInputfx(context, _fxs[i]);
+                  }
+                },
+              ),
+            )
           ],
         ));
       }
@@ -589,61 +570,44 @@ class _HomePageState extends State<HomePage> {
       );
     }
 
-    Widget buttonSend() {
-      return Container(
-          margin: EdgeInsets.only(bottom: 40),
-          alignment: FractionalOffset.bottomCenter,
-          height: screenHeightExcludingToolbar(context, dividedBy: 5),
-          width: double.infinity,
-          child: Container(
-              margin: const EdgeInsets.only(top: 40),
-              child: ButtonTheme(
-                minWidth: 130.0,
-                height: 40.0,
-                child: RaisedButton(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  onPressed: () {
-                    if (isSwitched) {
-                        if (agencias != null && estadoenvio != EstadosEnviosEnum.ENVIADO) {
-                          verificarenvio();
-                        }
-                      
-                    } else {
-                        if (agencias != null && estadoentrega == EstadosEnviosEnum.ENVIADO) {
-                          verificarenvio();
-                        }
-                      
-                    }
-                  },
-                  color: isSwitched
-                      ? agencias != null && estadoenvio != EstadosEnviosEnum.ENVIADO
-                          ? Color(0xFF2C6983)
-                          : colorletra
-                      : agencias != null && estadoentrega == EstadosEnviosEnum.ENVIADO
-                          ? Color(0xFF2C6983)
-                          : colorletra,
-                  child:
-                      Text('Registrar', style: TextStyle(color: Colors.white)),
-                ),
-              )));
-    }
-
     return Scaffold(
         appBar: CustomAppBar(text: "Registro de visita"),
-        drawer: crearMenu(context),
+        drawer: DrawerPage(),
         body: SingleChildScrollView(
             child: Padding(
           padding: EdgeInsets.only(left: 20, right: 20),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
               switchWidget(),
-              codAgenciaWidget(),
-              listarInputs(listInput),
-              listarAgencia(),
-              buttonSend()
+              Container(
+                margin: EdgeInsets.only(bottom: 20),
+                child: InputWidget(
+                    controller: _codigoController,
+                    focusInput: focusCodigo,
+                    iconSufix: IconsData.ICON_CAMERA,
+                    iconPrefix: IconsData.ICON_QR,
+                    methodOnChange: onchangeCodigo,
+                    methodOnPressed: onPressCodigo,
+                    methodOnPressedSufix: _scannerCodAgencia,
+                    hinttext: "Código"),
+              ),
+              listarInputs(this.listInputs),
+              listarAgencia(this.agenciaModel, this.valueCodigoController),
+              ButtonWidget(
+                  onPressed: onPressedButton,
+                  iconoButton: IconsData.ICON_SEND,
+                  colorParam: enRecojo
+                      ? this.agenciaModel != null &&
+                              agenciaModel.estado != EstadosEnviosEnum.VACIO &&
+                              agenciaModel.estado != EstadosEnviosEnum.VISITADA
+                          ? StylesThemeData.PRIMARY_COLOR
+                          : StylesThemeData.DISABLE_COLOR
+                      : this.agenciaModel != null &&
+                              agenciaModel.estado != EstadosEnviosEnum.VACIO &&
+                              agenciaModel.estado == EstadosEnviosEnum.ENVIADO
+                          ? StylesThemeData.PRIMARY_COLOR
+                          : StylesThemeData.DISABLE_COLOR,
+                  texto: 'Registrar')
             ],
           ),
         )));

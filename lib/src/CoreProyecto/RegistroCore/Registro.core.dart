@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:rvaapp/src/Providers/RegistroProvider/IRegistro.provider.dart';
 import 'package:rvaapp/src/Providers/RegistroProvider/Registro.provider.dart';
 import 'package:rvaapp/src/Util/utils.dart';
+import 'package:rvaapp/src/enum/TipoRegistro.dart';
 import 'package:rvaapp/src/models/AgenciaModel.dart';
 import 'package:rvaapp/src/models/CampoModel.dart';
 import 'IRegistro.core.dart';
@@ -16,25 +17,26 @@ class RegistroCore implements IRegistroCore {
   @override
   Future<bool> registrocodigoCore(
       bool modo, String codigoAgencia, List<CampoModel> listCampo) async {
-    dynamic listCampos = listCampo.map((campo) => {"iId": campo.id, "valor": campo.valor});
+    List<Map<String, dynamic>> listCampos = listCampo
+        .map((campo) => {"iId": "${campo.id}", "valor": campo.valor})
+        .toList();
     Map<String, dynamic> dataMap = {
       'codigoUsuario': buzonId(),
       'codigoAgencia': codigoAgencia,
-      'campos': listCampos
+      'tipoRegistro':
+          modo ? TipoRegistro.TIPO_RECOJO.toString() : TipoRegistro.TIPO_ENTREGA.toString(),
+      'campos': json.encode(listCampos)
     };
-    if (modo) {
-      return await registro.registroCodigoRecojo(dataMap);
-    } else {
-      return await registro.registroCodigoEntrega(dataMap);
-    }
+    return await registro.registroCodigo(dataMap);
   }
 
   @override
-  Future<List<AgenciaModel>> listarAgencias(String codigo, bool modo) async {
+  Future<AgenciaModel> listarAgencias(String codigo, bool modo) async {
     Map<String, dynamic> dataMap = {
       'codigoUsuario': buzonId(),
       'codigoAgencia': codigo,
-      'idTipoRegistro': modo ? "1" : "2"
+      'idTipoRegistro':
+          modo ? TipoRegistro.TIPO_RECOJO : TipoRegistro.TIPO_ENTREGA
     };
     return await registro.listarAgenciaModalidad(dataMap);
   }
